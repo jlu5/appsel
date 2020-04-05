@@ -4,9 +4,11 @@ import itertools
 import os
 import sys
 
-from PyQt5.QtWidgets import QMainWindow, QApplication
+from PyQt5.QtWidgets import QMainWindow, QApplication, QHeaderView
 from PyQt5.uic import loadUi
-from PyQt5.QtCore import QStandardPaths
+from PyQt5.QtCore import Qt, QStandardPaths
+
+from models.mimetypeslistmodel import MimeTypesListModel
 
 SECTION_DEFAULTS = "Default Applications"
 SECTION_ADDED    = "Added Associations"
@@ -21,6 +23,15 @@ class AppSelector(QMainWindow):
         self._ui = loadUi(uifile, self)
         self._ui.show()
         print("mimeapps.list paths:", self._get_mimeapps_list_paths())
+
+        # Read mimeapps.list from INI parser
+        self.mimeapps = configparser.ConfigParser()
+        self.mimeapps.read(self._get_mimeapps_list_paths())
+
+        # Enumerate MIME Types table view
+        self.mimetypesmodel = MimeTypesListModel()
+        self._ui.typesView.setModel(self.mimetypesmodel)
+        self._ui.typesView.sortByColumn(0, Qt.AscendingOrder)
 
     @staticmethod
     def _get_mimeapps_list_paths():
@@ -44,6 +55,12 @@ class AppSelector(QMainWindow):
         ))
         global_defaults = QStandardPaths.locateAll(QStandardPaths.ApplicationsLocation, "mimeapps.list")
         return user_defaults_per_desktop + user_defaults + global_defaults_per_desktop + global_defaults
+
+
+#data = read_file_types()
+#for section in data.sections():
+#    print(section, data.options(section))
+
 
 def main():
     """Entrypoint: runs program and inits UI"""
