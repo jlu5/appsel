@@ -5,10 +5,11 @@ from PyQt5.QtGui import QIcon
 
 class MimeTypesListModel(QAbstractTableModel):
 
-    def __init__(self):
+    def __init__(self, mimeapps):
         super().__init__()
 
         db = QMimeDatabase()
+        self.mimeapps = mimeapps
         self.mimetypes = db.allMimeTypes()
 
     def data(self, index, role):
