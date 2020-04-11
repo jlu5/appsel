@@ -8,10 +8,6 @@ from PyQt5.QtCore import Qt
 from models.mimetypeslistmodel import MimeTypesListModel
 from models.mimeapps import MimeAppsList
 
-SECTION_DEFAULTS = "Default Applications"
-SECTION_ADDED    = "Added Associations"
-SECTION_REMOVED  = "Removed Associations"
-
 class AppSelector(QMainWindow):
     """App Selector main window"""
 
