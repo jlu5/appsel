@@ -11,7 +11,7 @@ class MimeTypesListModel(QAbstractTableModel):
         super().__init__()
 
         db = QMimeDatabase()
-        self.mimetypemanager = mimetypemanager
+        self.manager = mimetypemanager
         self.mimetypes = db.allMimeTypes()
 
     def _get_mimetype(self, index, role):
@@ -32,13 +32,13 @@ class MimeTypesListModel(QAbstractTableModel):
     def _get_default_app(self, index, role):
         """Returns display data for the default application column."""
         mimetype = self.mimetypes[index.row()]
-        default_app_id = self.mimetypemanager.get_default_app(mimetype.name())
+        default_app_id = self.manager.get_default_app(mimetype.name())
 
         if default_app_id:
             if role == Qt.DisplayRole:  # Display text
-                return self.mimetypemanager.desktop_entries.get_name(default_app_id)
+                return self.manager.desktop_entries.get_name(default_app_id)
             if role == Qt.DecorationRole:  # App icon
-                return self.mimetypemanager.desktop_entries.get_icon(default_app_id)
+                return self.manager.desktop_entries.get_icon(default_app_id)
         else:  # No default app found
             if role == Qt.DisplayRole:
                 return 'None selected'
@@ -67,7 +67,7 @@ class MimeTypesListModel(QAbstractTableModel):
         if column == 1:
             def _sort_by_app(mimetype):
                 # \uFFFF is a quick hack to make types without a default show up last
-                return self.mimetypemanager.get_default_app(mimetype.name()) or '\uFFFF'
+                return self.manager.get_default_app(mimetype.name()) or '\uFFFF'
 
             self.mimetypes.sort(key=_sort_by_app,
                                 reverse=order != Qt.AscendingOrder)

@@ -13,6 +13,10 @@ SECTION_ADDED = "Added Associations"
 SECTION_REMOVED = "Removed Associations"
 
 class MimeTypesManager():
+    """
+    Class to enumerate and manage default applications for MIME types.
+    All functions in this class expect MIME types as strings instead of QMimeType instances.
+    """
     def __init__(self, desktop_entries, *, paths=None):
         self.desktop_entries = desktop_entries
         if paths is None:

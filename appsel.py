@@ -6,9 +6,9 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QHeaderView
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import Qt
 
-from models.mimetypeslistmodel import MimeTypesListModel
-from models.mimetypesmanager import MimeTypesManager
-from models.desktopentries import DesktopEntriesList
+from backend.models.mimetypeslistmodel import MimeTypesListModel
+from backend.mimetypesmanager import MimeTypesManager
+from backend.desktopentries import DesktopEntriesList
 
 class AppSelector(QMainWindow):
     """App Selector main window"""
@@ -32,7 +32,7 @@ def main():
     """Entrypoint: runs program and inits UI"""
     logging.basicConfig(level=logging.DEBUG)
     app = QApplication(sys.argv)
-    AppSelector(app, "appsel.ui")
+    AppSelector(app, "ui/appsel.ui")
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
