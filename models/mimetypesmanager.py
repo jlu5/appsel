@@ -11,7 +11,7 @@ SECTION_DEFAULTS = "Default Applications"
 SECTION_ADDED = "Added Associations"
 SECTION_REMOVED = "Removed Associations"
 
-class MimeAppsList():
+class MimeTypesManager():
     def __init__(self, applist, *, paths=None):
         self.applist = applist
         if paths is None:

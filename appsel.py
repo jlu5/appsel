@@ -6,8 +6,8 @@ from PyQt5.uic import loadUi
 from PyQt5.QtCore import Qt
 
 from models.mimetypeslistmodel import MimeTypesListModel
-from models.mimeapps import MimeAppsList
-from models.desktopentries import DesktopEntries
+from models.mimetypesmanager import MimeTypesManager
+from models.desktopentries import DesktopEntriesList
 
 class AppSelector(QMainWindow):
     """App Selector main window"""
@@ -19,10 +19,10 @@ class AppSelector(QMainWindow):
         self._ui.show()
 
         # Enumerate Apps list
-        self.applist = DesktopEntries()
+        self.applist = DesktopEntriesList()
 
         # Enumerate MIME Types table view
-        self.mimeapps = MimeAppsList(self.applist)
+        self.mimeapps = MimeTypesManager(self.applist)
         self.mimetypesmodel = MimeTypesListModel(self.mimeapps)
         self._ui.typesView.setModel(self.mimetypesmodel)
         self._ui.typesView.sortByColumn(0, Qt.AscendingOrder)

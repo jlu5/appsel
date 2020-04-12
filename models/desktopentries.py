@@ -1,10 +1,11 @@
+import collections
 import os
 import os.path
 
 import xdg.DesktopEntry
-from PyQt5.QtCore import Qt, QStandardPaths
+from PyQt5.QtCore import QStandardPaths
 
-class DesktopEntries():
+class DesktopEntriesList():
     """Enumerate and provide display information for .desktop entries on the system."""
 
     def __init__(self):
