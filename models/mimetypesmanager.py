@@ -2,6 +2,7 @@
 import collections
 import configparser
 import itertools
+import logging
 import os
 import pprint
 
@@ -12,8 +13,8 @@ SECTION_ADDED = "Added Associations"
 SECTION_REMOVED = "Removed Associations"
 
 class MimeTypesManager():
-    def __init__(self, applist, *, paths=None):
-        self.applist = applist
+    def __init__(self, desktop_entries, *, paths=None):
+        self.desktop_entries = desktop_entries
         if paths is None:
             paths = self._get_mimeapps_list_paths()
             print("mimeapps.list paths:", self._get_mimeapps_list_paths())
@@ -69,25 +70,32 @@ class MimeTypesManager():
         return user_defaults_per_desktop + user_defaults + global_defaults_per_desktop + global_defaults
 
     def get_default_app(self, mimetype):
-        #for entry in self.mimeapps_db[SECTION_DEFAULTS]:
-        #    if <desktop entry exists> and <desktop entry supports type>:
-        #        return entry
+        """
+        Returns the default application for the MIME type, or None if none is set.
+        """
+        supported_apps = self.desktop_entries.get_applications(mimetype)
+        for entry_id in self.mimeapps_db[SECTION_DEFAULTS].get(mimetype, []):
+            if entry_id in self.desktop_entries.entries and entry_id in supported_apps:
+                return entry_id
         return None  # Not found
 
-    def set_default_app(self, mimetype, desktop_entry):
+    def set_default_app(self, mimetype, desktop_entry_id):
+        """
+        STUB: Sets the default application for the MIME type.
+        """
         return
 
-    def is_blacklisted(self, mimetype, desktop_entry):
+    def add_association(self, mimetype, desktop_entry_id):
+        """
+        STUB: Registers a new desktop entry to the MIME type.
+        """
         return
 
-    def set_blacklisted(self, mimetype, desktop_entry, value):
+    def disable_association(self, mimetype, desktop_entry_id):
         return
 
-    def has_association(self, mimetype, desktop_entry):
+    def enable_association(self, mimetype, desktop_entry_id):
         return
 
-    def add_association(self, mimetype, desktop_entry):
-        return
-
-    def remove_association(self, mimetype, desktop_entry):
+    def remove_association(self, mimetype, desktop_entry_id):
         return

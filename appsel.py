@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import logging
 import sys
 
 from PyQt5.QtWidgets import QMainWindow, QApplication, QHeaderView
@@ -29,6 +30,7 @@ class AppSelector(QMainWindow):
 
 def main():
     """Entrypoint: runs program and inits UI"""
+    logging.basicConfig(level=logging.DEBUG)
     app = QApplication(sys.argv)
     AppSelector(app, "appsel.ui")
     sys.exit(app.exec_())

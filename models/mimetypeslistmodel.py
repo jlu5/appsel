@@ -1,31 +1,21 @@
 
 # pylint: disable=invalid-name
+import functools
+
 from PyQt5.QtCore import Qt, QAbstractTableModel, QMimeDatabase, QVariant, QModelIndex
 from PyQt5.QtGui import QIcon
 
 class MimeTypesListModel(QAbstractTableModel):
 
-    def __init__(self, mimeapps):
+    def __init__(self, mimetypemanager):
         super().__init__()
 
         db = QMimeDatabase()
-        self.mimeapps = mimeapps
+        self.mimetypemanager = mimetypemanager
         self.mimetypes = db.allMimeTypes()
 
-    def data(self, index, role):
-        if index.column() == 0:
-            return self._get_mimetype(index, role)
-        # TODO: implement fetching associated app
-        return QVariant()
-
-    def sort(self, column, order=Qt.AscendingOrder):
-        if column == 0:
-            self.mimetypes.sort(key=lambda mimetype: mimetype.name(),
-                                reverse=order != Qt.AscendingOrder)
-            self.dataChanged.emit(QModelIndex(), QModelIndex())
-        # TODO: implement sorting on default app
-
     def _get_mimetype(self, index, role):
+        """Returns display data for the MIME type column."""
         mimetype = self.mimetypes[index.row()]
 
         if role == Qt.DisplayRole:
@@ -39,12 +29,56 @@ class MimeTypesListModel(QAbstractTableModel):
 
         return QVariant()
 
+    def _get_default_app(self, index, role):
+        """Returns display data for the default application column."""
+        mimetype = self.mimetypes[index.row()]
+        default_app_id = self.mimetypemanager.get_default_app(mimetype.name())
+
+        if default_app_id:
+            if role == Qt.DisplayRole:  # Display text
+                return self.mimetypemanager.desktop_entries.get_name(default_app_id)
+            if role == Qt.DecorationRole:  # App icon
+                return self.mimetypemanager.desktop_entries.get_icon(default_app_id)
+        else:  # No default app found
+            if role == Qt.DisplayRole:
+                return 'None selected'
+
+        return QVariant()
+
+    @functools.lru_cache(maxsize=None)
+    def data(self, index, role):
+        if index.column() == 0:
+            return self._get_mimetype(index, role)
+        if index.column() == 1:
+            return self._get_default_app(index, role)
+        return QVariant()
+
+    def _refresh_data(self):
+        self.data.cache_clear()
+        self.dataChanged.emit(QModelIndex(), QModelIndex())
+
+    def sort(self, column, order=Qt.AscendingOrder):
+        """Sorts the model by the given column and order."""
+        # Note column = -1 is also allowed, meaning the natural order of the list
+        # https://doc.qt.io/qt-5/qtableview.html#sortByColumn
+        if column <= 0:
+            self.mimetypes.sort(key=lambda mimetype: mimetype.name(),
+                                reverse=order != Qt.AscendingOrder)
+        if column == 1:
+            def _sort_by_app(mimetype):
+                # \uFFFF is a quick hack to make types without a default show up last
+                return self.mimetypemanager.get_default_app(mimetype.name()) or '\uFFFF'
+
+            self.mimetypes.sort(key=_sort_by_app,
+                                reverse=order != Qt.AscendingOrder)
+        self._refresh_data()
+
     def headerData(self, section, _orientation, role):
         if role == Qt.DisplayRole:
             if section == 0:
                 return "MIME Type"
             elif section == 1:
-                return "Associated application"
+                return "Default Application"
         return QVariant()
 
     def rowCount(self, _index):
