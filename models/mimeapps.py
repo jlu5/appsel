@@ -12,7 +12,8 @@ SECTION_ADDED = "Added Associations"
 SECTION_REMOVED = "Removed Associations"
 
 class MimeAppsList():
-    def __init__(self, paths=None):
+    def __init__(self, applist, *, paths=None):
+        self.applist = applist
         if paths is None:
             paths = self._get_mimeapps_list_paths()
             print("mimeapps.list paths:", self._get_mimeapps_list_paths())
