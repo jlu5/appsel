@@ -3,12 +3,17 @@ import logging
 import os
 import os.path
 
+from typing import List
+
 import xdg.DesktopEntry
 from PyQt5.QtCore import QStandardPaths
 from PyQt5.QtGui import QIcon
 
 class DesktopEntriesList():
-    """Enumerate and provide display information for .desktop entries on the system."""
+    """
+    Enumerate and provide display information for .desktop entries on the system.
+    All functions in this class expect MIME types as strings instead of QMimeType instances.
+    """
 
     def __init__(self):
         self.entries = {}
@@ -32,21 +37,21 @@ class DesktopEntriesList():
             for mimetype in entry.getMimeTypes():
                 self.mimemap[mimetype].append(name)
 
-    def get_mimetypes(self, desktop_entry_id):
+    def get_mimetypes(self, desktop_entry_id: str) -> List[str]:
         """Returns the MIME types supported by a desktop entry."""
         return self.entries[desktop_entry_id].getMimeTypes()
 
-    def get_applications(self, mimetype):
+    def get_applications(self, mimetype: str) -> List[str]:
         """
         Returns the applications registered for a given MIME type.
         """
         return self.mimemap.get(mimetype, [])
 
-    def get_name(self, desktop_entry_id):
+    def get_name(self, desktop_entry_id: str) -> str:
         """Returns the name of a desktop entry, if it exists."""
         return self.entries[desktop_entry_id].getName()
 
-    def get_icon(self, desktop_entry_id):
+    def get_icon(self, desktop_entry_id: str) -> QIcon:
         """Returns a QIcon representing a desktop entry, if it exists."""
         entry = self.entries[desktop_entry_id]
         # Icon definitions in .desktop entries can be a name (icon pulled from the current icon theme)
@@ -57,7 +62,7 @@ class DesktopEntriesList():
         else:
             return QIcon.fromTheme(iconname)
 
-    def is_shown(self, desktop_entry_id):
+    def is_shown(self, desktop_entry_id: str) -> bool:
         """
         Returns whether the desktop entry should be shown in the applications list.
 

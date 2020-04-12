@@ -6,6 +6,7 @@ import logging
 import os
 import pprint
 
+from typing import List
 from PyQt5.QtCore import Qt, QStandardPaths
 
 SECTION_DEFAULTS = "Default Applications"
@@ -17,7 +18,7 @@ class MimeTypesManager():
     Class to enumerate and manage default applications for MIME types.
     All functions in this class expect MIME types as strings instead of QMimeType instances.
     """
-    def __init__(self, desktop_entries, *, paths=None):
+    def __init__(self, desktop_entries: str, *, paths: List[str] = None) -> List[str]:
         self.desktop_entries = desktop_entries
         if paths is None:
             paths = self._get_mimeapps_list_paths()
@@ -73,33 +74,37 @@ class MimeTypesManager():
         global_defaults = QStandardPaths.locateAll(QStandardPaths.ApplicationsLocation, "mimeapps.list")
         return user_defaults_per_desktop + user_defaults + global_defaults_per_desktop + global_defaults
 
-    def get_default_app(self, mimetype):
+    def get_default_app(self, mimetype: str):
         """
         Returns the default application for the MIME type, or None if none is set.
         """
-        supported_apps = self.desktop_entries.get_applications(mimetype)
+        supported_apps = self.get_supported_apps(mimetype)
         for entry_id in self.mimeapps_db[SECTION_DEFAULTS].get(mimetype, []):
             if entry_id in self.desktop_entries.entries and entry_id in supported_apps:
                 return entry_id
         return None  # Not found
 
-    def set_default_app(self, mimetype, desktop_entry_id):
+    def set_default_app(self, mimetype: str, desktop_entry_id: str):
         """
         STUB: Sets the default application for the MIME type.
         """
         return
 
-    def add_association(self, mimetype, desktop_entry_id):
+    def get_supported_apps(self, mimetype: str):
+        """Returns a list of apps (desktop entry IDs) that support a MIME type."""
+        return self.desktop_entries.get_applications(mimetype)
+
+    def add_association(self, mimetype: str, desktop_entry_id: str):
         """
         STUB: Registers a new desktop entry to the MIME type.
         """
         return
 
-    def disable_association(self, mimetype, desktop_entry_id):
+    def disable_association(self, mimetype: str, desktop_entry_id: str):
         return
 
-    def enable_association(self, mimetype, desktop_entry_id):
+    def enable_association(self, mimetype: str, desktop_entry_id: str):
         return
 
-    def remove_association(self, mimetype, desktop_entry_id):
+    def remove_association(self, mimetype: str, desktop_entry_id: str):
         return
