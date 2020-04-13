@@ -10,6 +10,8 @@ from backend.models.mimetypeslistmodel import MimeTypesListModel
 from backend.mimetypesmanager import MimeTypesManager
 from backend.desktopentries import DesktopEntriesList
 
+from dialogs.setdefaultappdialog import SetDefaultAppDialog
+
 class AppSelector(QMainWindow):
     """App Selector main window"""
 
@@ -23,10 +25,16 @@ class AppSelector(QMainWindow):
         self.applist = DesktopEntriesList()
 
         # Enumerate MIME Types table view
-        self.mimeapps = MimeTypesManager(self.applist)
-        self.mimetypesmodel = MimeTypesListModel(self.mimeapps)
+        self.manager = MimeTypesManager(self.applist)
+        self.mimetypesmodel = MimeTypesListModel(self.manager)
         self._ui.typesView.setModel(self.mimetypesmodel)
         self._ui.typesView.sortByColumn(0, Qt.AscendingOrder)
+        self._ui.typesView.activated.connect(self.mime_type_settings)
+
+    def mime_type_settings(self, index):
+        """Launches a dialog to set the default app for a MIME type."""
+        mimetype = self.mimetypesmodel.mimetypes[index.row()]  # type: QMimeType
+        SetDefaultAppDialog(self.manager, mimetype)
 
 def main():
     """Entrypoint: runs program and inits UI"""
