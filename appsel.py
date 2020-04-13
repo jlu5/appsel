@@ -30,6 +30,15 @@ class AppSelector(QMainWindow):
         self._ui.typesView.setModel(self.mimetypesmodel)
         self._ui.typesView.sortByColumn(0, Qt.AscendingOrder)
         self._ui.typesView.activated.connect(self.mime_type_settings)
+        self._ui.typesView.sizeHintForColumn = self.types_view_size_hint_for_column
+        self._ui.typesView.resizeColumnsToContents()
+
+    @staticmethod
+    def types_view_size_hint_for_column(column):
+        if column == 1:
+            return 200
+        else:
+            return 400
 
     def mime_type_settings(self, index):
         """Launches a dialog to set the default app for a MIME type."""

@@ -7,6 +7,8 @@ from PyQt5.QtGui import QIcon
 
 class MimeTypesListModel(QAbstractTableModel):
 
+    COLUMNS = ["MIME Type", "File Extensions", "Default Application"]
+
     def __init__(self, mimetypemanager):
         super().__init__()
 
@@ -37,6 +39,15 @@ class MimeTypesListModel(QAbstractTableModel):
 
         return QVariant()
 
+    def _get_extensions(self, index, role):
+        """Returns display data for the File Extensions column."""
+        mimetype = self.mimetypes[index.row()]
+
+        if role == Qt.DisplayRole:
+            return ",".join(mimetype.suffixes())
+
+        return QVariant()
+
     def _get_default_app(self, index, role):
         """Returns display data for the default application column."""
         mimetype = self.mimetypes[index.row()]
@@ -55,11 +66,11 @@ class MimeTypesListModel(QAbstractTableModel):
 
     @functools.lru_cache(maxsize=None)
     def data(self, index, role):
-        if index.column() == 0:
-            return self._get_mimetype(index, role)
-        if index.column() == 1:
-            return self._get_default_app(index, role)
-        return QVariant()
+        accessors = [self._get_mimetype, self._get_extensions, self._get_default_app]
+        try:
+            return accessors[index.column()](index, role)
+        except IndexError:
+            return QVariant()
 
     def _refresh_data(self):
         self.data.cache_clear()
@@ -72,7 +83,10 @@ class MimeTypesListModel(QAbstractTableModel):
         if column <= 0:
             self.mimetypes.sort(key=lambda mimetype: mimetype.name(),
                                 reverse=order != Qt.AscendingOrder)
-        if column == 1:
+        elif column == 1:
+            self.mimetypes.sort(key=lambda qmimetype: qmimetype.preferredSuffix() or '\uFFFF',
+                                reverse=order != Qt.AscendingOrder)
+        elif column == 2:
             def _sort_by_app(mimetype):
                 # \uFFFF is a quick hack to make types without a default show up last
                 return self.manager.get_default_app(mimetype.name()) or '\uFFFF'
@@ -83,14 +97,11 @@ class MimeTypesListModel(QAbstractTableModel):
 
     def headerData(self, section, _orientation, role):
         if role == Qt.DisplayRole:
-            if section == 0:
-                return "MIME Type"
-            elif section == 1:
-                return "Default Application"
+            return self.COLUMNS[section]
         return QVariant()
 
     def rowCount(self, _index):
         return len(self.mimetypes)
 
     def columnCount(self, _index):
-        return 2  # hardcoded to be MIME type + app list
+        return len(self.COLUMNS)
