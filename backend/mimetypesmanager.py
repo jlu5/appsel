@@ -79,8 +79,9 @@ class MimeTypesManager():
         Returns the default application for the MIME type, or None if none is set.
         """
         supported_apps = self.get_supported_apps(mimetype)
-        for entry_id in self.mimeapps_db[SECTION_DEFAULTS].get(mimetype, []):
-            if entry_id in self.desktop_entries.entries and entry_id in supported_apps:
+        default_entries = self.mimeapps_db[SECTION_DEFAULTS].get(mimetype, [])
+        for entry_id in default_entries:
+            if entry_id in self.desktop_entries.entries:
                 return entry_id
         return None  # Not found
 
