@@ -81,20 +81,20 @@ class DesktopEntriesList():
             return False
 
         current_desktops = set(os.environ.get('XDG_CURRENT_DESKTOP', '').split(':'))
-        if onlyshowin := entry.getOnlyShowIn():
-            if not set(onlyshowin) & current_desktops:
-                logging.debug("Not showing desktop entry %s because %s does not match %s",
-                              desktop_entry_id, current_desktops, onlyshowin)
-                return False
-        if notshowin := entry.getNotShowIn():
-            if set(notshowin) & current_desktops:
-                logging.debug("Not showing desktop entry %s because %s matches %s",
-                              desktop_entry_id, current_desktops, notshowin)
-                return False
+        onlyshowin = entry.getOnlyShowIn()
+        if onlyshowin and not set(onlyshowin) & current_desktops:
+            logging.debug("Not showing desktop entry %s because %s does not match %s",
+                            desktop_entry_id, current_desktops, onlyshowin)
+            return False
+        notshowin = entry.getNotShowIn()
+        if notshowin and set(notshowin) & current_desktops:
+            logging.debug("Not showing desktop entry %s because %s matches %s",
+                          desktop_entry_id, current_desktops, notshowin)
+            return False
 
-        if tryexec := entry.getTryExec():
-            if not os.path.exists(tryexec):
-                logging.debug("Not showing desktop entry %s because TryExec path %s does not exist",
-                              desktop_entry_id, tryexec)
-                return False
+        tryexec = entry.getTryExec()
+        if tryexec and not os.path.exists(tryexec):
+            logging.debug("Not showing desktop entry %s because TryExec path %s does not exist",
+                            desktop_entry_id, tryexec)
+            return False
         return True
