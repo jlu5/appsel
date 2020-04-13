@@ -10,9 +10,17 @@ class MimeTypesListModel(QAbstractTableModel):
     def __init__(self, mimetypemanager):
         super().__init__()
 
-        db = QMimeDatabase()
+        self.db = QMimeDatabase()
         self.manager = mimetypemanager
-        self.mimetypes = db.allMimeTypes()
+        self.mimetypes = []
+        self.load_mime_types()
+
+    def load_mime_types(self):
+        self.mimetypes.clear()
+        # Only show MIME types that have at least one app
+        for qmimetype in self.db.allMimeTypes():
+            if qmimetype.name() in self.manager.desktop_entries.mimemap:
+                self.mimetypes.append(qmimetype)
 
     def _get_mimetype(self, index, role):
         """Returns display data for the MIME type column."""
