@@ -92,8 +92,15 @@ class MimeTypesManager():
         return
 
     def get_supported_apps(self, mimetype: str):
-        """Returns a list of apps (desktop entry IDs) that support a MIME type."""
-        return self.desktop_entries.get_applications(mimetype)
+        """
+        Returns a list of apps (desktop entry IDs) that support a MIME type.
+
+        This includes apps that support the type natively as well as custom associations added via mimeapps.list
+        """
+        results = set(self.desktop_entries.get_applications(mimetype))
+        results |= set(self.mimeapps_db[SECTION_ADDED].get(mimetype, []))
+        # TODO: handle blacklist
+        return list(results)
 
     def add_association(self, mimetype: str, desktop_entry_id: str):
         """
