@@ -59,8 +59,9 @@ class MimeTypesListModel(QAbstractTableModel):
             if role == Qt.DecorationRole:  # App icon
                 return self.manager.desktop_entries.get_icon(default_app_id)
         else:  # No default app found
+            apps = self.manager.get_supported_apps(mimetype.name())
             if role == Qt.DisplayRole:
-                return 'None selected'
+                return f'None selected - {len(apps)} options'
 
         return QVariant()
 

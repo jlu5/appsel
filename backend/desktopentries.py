@@ -44,6 +44,9 @@ class DesktopEntriesList():
     def get_applications(self, mimetype: str) -> List[str]:
         """
         Returns the applications registered for a given MIME type.
+
+        NOTE: This will only consider MIME types registered by desktop entries, and not those added
+        by the user or system administrator through mimeapps.list.
         """
         return self.mimemap.get(mimetype, [])
 
