@@ -17,11 +17,18 @@ class SimpleAppListModel(QAbstractListModel):
         self.apps = apps
 
     def data(self, index, role):
-        app_id = self.apps[index.row()]
+        app = self.apps[index.row()]
         if role == Qt.DisplayRole:  # Display text
-            return self.desktop_entries.get_name(app_id)
+            prefix = ''
+            # TODO: replace with a proper text formatter
+            # Unfortunately Qt ListView doesn't natively support rich text
+            if app.disabled:
+                prefix += "(disabled) "
+            if app.custom:
+                prefix += "(custom) "
+            return prefix + self.desktop_entries.get_name(app.app_id)
         if role == Qt.DecorationRole:  # App icon
-            return self.desktop_entries.get_icon(app_id)
+            return self.desktop_entries.get_icon(app.app_id)
 
     def sort(self, _column, order=Qt.AscendingOrder):
         """Sorts the model by the given column and order."""

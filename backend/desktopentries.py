@@ -35,15 +35,25 @@ class DesktopEntriesList():
 
     def get_mimetypes(self, desktop_entry_id: str) -> List[str]:
         """Returns the MIME types supported by a desktop entry."""
-        return self.entries[desktop_entry_id].getMimeTypes()
+        try:
+            return self.entries[desktop_entry_id].getMimeTypes()
+        except KeyError:
+            return []
 
     def get_name(self, desktop_entry_id: str) -> str:
         """Returns the name of a desktop entry, if it exists."""
-        return self.entries[desktop_entry_id].getName()
+        try:
+            return self.entries[desktop_entry_id].getName()
+        except KeyError:
+            return desktop_entry_id
 
-    def get_icon(self, desktop_entry_id: str) -> QIcon:
+    def get_icon(self, desktop_entry_id: str) -> QIcon or None:
         """Returns a QIcon representing a desktop entry, if it exists."""
-        entry = self.entries[desktop_entry_id]
+        try:
+            entry = self.entries[desktop_entry_id]
+        except KeyError:
+            return None
+
         # Icon definitions in .desktop entries can be a name (icon pulled from the current icon theme)
         # or an absolute path.
         iconname = entry.getIcon()
@@ -62,7 +72,10 @@ class DesktopEntriesList():
         3) The OnlyShowIn and NotShowIn criteria are met for the desktop entry
         4) The path pointed to by TryExec exists, if the field exists
         """
-        entry = self.entries[desktop_entry_id]
+        try:
+            entry = self.entries[desktop_entry_id]
+        except KeyError:
+            return False
 
         if entry.getHidden() or entry.getNoDisplay():
             return False
