@@ -2,13 +2,14 @@
 import logging
 import sys
 
-from PyQt5.QtWidgets import QMainWindow, QApplication, QHeaderView
+from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import Qt
 
 from backend.models.mimetypeslistmodel import MimeTypesListModel
 from backend.mimetypesmanager import MimeTypesManager
 from backend.desktopentries import DesktopEntriesList
+from backend.itemdelegates import MimeTypesListDelegate
 
 from dialogs.setdefaultappdialog import SetDefaultAppDialog
 
@@ -27,11 +28,14 @@ class AppSelector(QMainWindow):
         # Enumerate MIME Types table view
         self.manager = MimeTypesManager(self.applist)
         self.mimetypesmodel = MimeTypesListModel(self.manager)
+
+        # UI settings
         self._ui.typesView.setModel(self.mimetypesmodel)
         self._ui.typesView.sortByColumn(0, Qt.AscendingOrder)
         self._ui.typesView.activated.connect(self.mime_type_settings)
         self._ui.typesView.sizeHintForColumn = self.types_view_size_hint_for_column
         self._ui.typesView.resizeColumnsToContents()
+        self._ui.typesView.setItemDelegate(MimeTypesListDelegate(self.mimetypesmodel))
 
     def types_view_size_hint_for_column(self, column):
         if column in {1, 2}:  # File Extensions, Status
