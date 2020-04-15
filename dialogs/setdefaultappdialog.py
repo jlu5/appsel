@@ -7,7 +7,7 @@ from PyQt5.uic import loadUi
 from PyQt5.QtCore import Qt
 
 sys.path.append('..')
-from backend.models.simpleapplistmodel import SimpleAppListModel
+from backend.models.defaultappoptionsmodel import DefaultAppOptionsModel
 
 class SetDefaultAppDialog(QDialog):
     uifile = "ui/setdefaultappdialog.ui"
@@ -20,7 +20,7 @@ class SetDefaultAppDialog(QDialog):
         # Enumerate and display a list of apps supporting this MIME type
         self.current_app = None
         self.apps = self.manager.get_supported_apps(mimetype.name())
-        self.apps_model = SimpleAppListModel(self.manager.desktop_entries, self.apps)
+        self.apps_model = DefaultAppOptionsModel(self.manager.desktop_entries, self.apps)
 
         self._ui = loadUi(self.uifile, self)
         self._ui.setWindowTitle(f"Set default application for {mimetype.name()}")
@@ -37,12 +37,15 @@ class SetDefaultAppDialog(QDialog):
         self.current_app = self.apps[current.row()]
 
     def add_application(self, event):
-        return  # TODO: stub
+        # TODO: stub
+        return
 
     def set_default(self, event):
+        # TODO: stub
         if self.current_app:
             print(f"Will set app {self.current_app} as default for {self.mimetype.name()}")
         return
 
     def remove_application(self, event):
+        # TODO: stub
         return

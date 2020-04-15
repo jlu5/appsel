@@ -5,10 +5,9 @@ import functools
 from PyQt5.QtCore import Qt, QAbstractListModel, QVariant, QModelIndex
 from PyQt5.QtGui import QIcon
 
-class SimpleAppListModel(QAbstractListModel):
+class DefaultAppOptionsModel(QAbstractListModel):
     """
-    A model to represent a read only list of applications.
-    This is used in the default app selector when setting defaults by MIME type.
+    A model to represent app choices in the when setting the defaults for a MIME type.
     """
     def __init__(self, desktop_entries, apps):
         super().__init__()
