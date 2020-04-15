@@ -141,6 +141,10 @@ class MimeTypesManager():
                 return entry_id
         return None  # Not found
 
+    def has_default(self, mimetype: str) -> bool:
+        """Returns whether a default for the MIME type was explicitly set."""
+        return mimetype in self.mimeapps_db[SECTION_DEFAULTS]
+
     def set_default_app(self, mimetype: str, desktop_entry_id: str):
         """
         STUB: Sets the default application for the MIME type.

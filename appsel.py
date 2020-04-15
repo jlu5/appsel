@@ -33,12 +33,11 @@ class AppSelector(QMainWindow):
         self._ui.typesView.sizeHintForColumn = self.types_view_size_hint_for_column
         self._ui.typesView.resizeColumnsToContents()
 
-    @staticmethod
-    def types_view_size_hint_for_column(column):
-        if column == 1:
-            return 200
+    def types_view_size_hint_for_column(self, column):
+        if column in {1, 2}:  # File Extensions, Status
+            return int(self.width() * 0.15)
         else:
-            return 400
+            return int(self.width() * 0.32)
 
     def mime_type_settings(self, index):
         """Launches a dialog to set the default app for a MIME type."""

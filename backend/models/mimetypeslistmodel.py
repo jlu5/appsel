@@ -7,7 +7,7 @@ from PyQt5.QtGui import QIcon
 
 class MimeTypesListModel(QAbstractTableModel):
 
-    COLUMNS = ["MIME Type", "File Extensions", "Default Application"]
+    COLUMNS = ["MIME Type", "File Extensions", "Status", "Default Application"]
 
     def __init__(self, mimetypemanager):
         super().__init__()
@@ -48,6 +48,15 @@ class MimeTypesListModel(QAbstractTableModel):
 
         return QVariant()
 
+    def _get_status(self, index, role):
+        """Returns display data for the Status column."""
+        mimetype = self.mimetypes[index.row()]
+
+        if role == Qt.DisplayRole:
+            return "User defined" if self.manager.has_default(mimetype.name()) else "Automatic"
+
+        return QVariant()
+
     def _get_default_app(self, index, role):
         """Returns display data for the default application column."""
         mimetype = self.mimetypes[index.row()]
@@ -67,7 +76,7 @@ class MimeTypesListModel(QAbstractTableModel):
 
     @functools.lru_cache(maxsize=None)
     def data(self, index, role):
-        accessors = [self._get_mimetype, self._get_extensions, self._get_default_app]
+        accessors = [self._get_mimetype, self._get_extensions, self._get_status, self._get_default_app]
         try:
             return accessors[index.column()](index, role)
         except IndexError:
@@ -88,6 +97,9 @@ class MimeTypesListModel(QAbstractTableModel):
             self.mimetypes.sort(key=lambda qmimetype: qmimetype.preferredSuffix() or '\uFFFF',
                                 reverse=order != Qt.AscendingOrder)
         elif column == 2:
+            self.mimetypes.sort(key=lambda qmimetype: self.manager.has_default(qmimetype.name()),
+                                reverse=order != Qt.AscendingOrder)
+        elif column == 3:
             def _sort_by_app(mimetype):
                 # \uFFFF is a quick hack to make types without a default show up last
                 return self.manager.get_default_app(mimetype.name()) or '\uFFFF'
