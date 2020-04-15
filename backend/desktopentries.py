@@ -58,7 +58,7 @@ class DesktopEntriesList():
         # or an absolute path.
         iconname = entry.getIcon()
         if os.path.isabs(iconname):
-            return QIcon.QIcon(iconname)
+            return QIcon(iconname)
         else:
             return QIcon.fromTheme(iconname)
 
