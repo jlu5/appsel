@@ -21,7 +21,7 @@ class MimeTypesListModel(QAbstractTableModel):
         self.mimetypes.clear()
         # Only show MIME types that have at least one app
         for qmimetype in self.db.allMimeTypes():
-            if qmimetype.name() in self.manager.desktop_entries.mimemap:
+            if qmimetype.name() in self.manager.mimeinfo_cache:
                 self.mimetypes.append(qmimetype)
 
     def _get_mimetype(self, index, role):

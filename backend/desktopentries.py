@@ -30,25 +30,12 @@ class DesktopEntriesList():
                         self.desktop_entry_paths[filename] = fullpath
                         print(f'Registered {filename} to {fullpath}')
 
-        # Map MIME types to applications that support it
-        self.mimemap = collections.defaultdict(list)
         for name, path in self.desktop_entry_paths.items():
-            self.entries[name] = entry = xdg.DesktopEntry.DesktopEntry(filename=path)
-            for mimetype in entry.getMimeTypes():
-                self.mimemap[mimetype].append(name)
+            self.entries[name] = xdg.DesktopEntry.DesktopEntry(filename=path)
 
     def get_mimetypes(self, desktop_entry_id: str) -> List[str]:
         """Returns the MIME types supported by a desktop entry."""
         return self.entries[desktop_entry_id].getMimeTypes()
-
-    def get_applications(self, mimetype: str) -> List[str]:
-        """
-        Returns the applications registered for a given MIME type.
-
-        NOTE: This will only consider MIME types registered by desktop entries, and not those added
-        by the user or system administrator through mimeapps.list.
-        """
-        return self.mimemap.get(mimetype, [])
 
     def get_name(self, desktop_entry_id: str) -> str:
         """Returns the name of a desktop entry, if it exists."""
@@ -87,7 +74,7 @@ class DesktopEntriesList():
         onlyshowin = entry.getOnlyShowIn()
         if onlyshowin and not set(onlyshowin) & current_desktops:
             logging.debug("Not showing desktop entry %s because %s does not match %s",
-                            desktop_entry_id, current_desktops, onlyshowin)
+                          desktop_entry_id, current_desktops, onlyshowin)
             return False
         notshowin = entry.getNotShowIn()
         if notshowin and set(notshowin) & current_desktops:
@@ -98,6 +85,6 @@ class DesktopEntriesList():
         tryexec = entry.getTryExec()
         if tryexec and not os.path.exists(tryexec):
             logging.debug("Not showing desktop entry %s because TryExec path %s does not exist",
-                            desktop_entry_id, tryexec)
+                          desktop_entry_id, tryexec)
             return False
         return True

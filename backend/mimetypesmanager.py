@@ -130,7 +130,7 @@ class MimeTypesManager():
 
         This includes apps that support the type natively as well as custom associations added via mimeapps.list
         """
-        results = set(self.desktop_entries.get_applications(mimetype))
+        results = set(self.mimeinfo_cache.get(mimetype, []))
         results |= set(self.mimeapps_db[SECTION_ADDED].get(mimetype, []))
         # TODO: handle blacklist
         return list(results)
