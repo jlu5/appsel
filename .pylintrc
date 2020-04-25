@@ -3,3 +3,6 @@ max-line-length=120
 
 # A fairly pedantic case for simple if statements: https://github.com/SoCo/SoCo/issues/500
 disable=no-else-return
+
+# Why is "f" a bad name for file descriptors when it's used in the Python docs?
+good-names=f

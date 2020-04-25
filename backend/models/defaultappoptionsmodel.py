@@ -2,19 +2,24 @@
 # pylint: disable=invalid-name
 import functools
 
-from PyQt5.QtCore import Qt, QAbstractListModel, QVariant, QModelIndex
+from PyQt5.QtCore import Qt, QAbstractListModel, QVariant, QModelIndex, QMimeType
 from PyQt5.QtGui import QIcon
 
 class DefaultAppOptionsModel(QAbstractListModel):
     """
     A model to represent app choices in the when setting the defaults for a MIME type.
     """
-    def __init__(self, manager, mimetype, default=None):
+    def __init__(self, manager, mimetype: QMimeType):
         super().__init__()
 
         self.manager = manager
-        self.default = self.manager.get_default_app(mimetype.name())
+        self.mimetype = mimetype
+        self.default = None
+        self.refresh()
         self.apps = list(self.manager.get_supported_apps(mimetype.name()).items())
+
+    def refresh(self):
+        self.default = self.manager.get_default_app(self.mimetype.name())
 
     def data(self, index, role):
         app_id, options = self.apps[index.row()]

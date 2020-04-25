@@ -35,6 +35,7 @@ class MimeTypesManager():
 
         self.mimeapps_db = collections.defaultdict(dict)
         self.mimeapps_local = None
+        self.mimeapps_local_path = None
         self.mimeinfo_cache = collections.defaultdict(list)
 
         self._initialize_mimeapps(paths=paths)
@@ -63,6 +64,7 @@ class MimeTypesManager():
             # Treat the first mimeapps.list path as the writable one. Usually this will be ~/.config/mimeapps.list
             if self.mimeapps_local is None:
                 self.mimeapps_local = loader
+                self.mimeapps_local_path = path
                 logging.info("Setting write path to %s", path)
 
             for section in {SECTION_ADDED, SECTION_DEFAULTS, SECTION_REMOVED}:
@@ -129,15 +131,22 @@ class MimeTypesManager():
                 return entry_id
         return None  # Not found
 
+    def _write(self):
+        with open(self.mimeapps_local_path, 'w') as f:
+            self.mimeapps_local.write(f, space_around_delimiters=False)
+
     def has_default(self, mimetype: str) -> bool:
         """Returns whether a default for the MIME type was explicitly set."""
         return mimetype in self.mimeapps_db[SECTION_DEFAULTS]
 
-    def set_default_app(self, mimetype: str, desktop_entry_id: str):
+    def set_default_app(self, mimetype: str, app_id: str):
         """
         STUB: Sets the default application for the MIME type.
         """
-        return
+        logging.debug("Setting app %s as default for %s", app_id, mimetype)
+        self.mimeapps_db[SECTION_DEFAULTS][mimetype] = [app_id]
+        self.mimeapps_local[SECTION_DEFAULTS][mimetype] = app_id
+        self._write()
 
     def get_supported_apps(self, mimetype: str) -> Dict[str, MimeAppChoiceSettings]:
         """
@@ -157,17 +166,17 @@ class MimeTypesManager():
 
         return results
 
-    def add_association(self, mimetype: str, desktop_entry_id: str):
+    def add_association(self, mimetype: str, app_id: str):
         """
         STUB: Registers a new desktop entry to the MIME type.
         """
         return
 
-    def disable_association(self, mimetype: str, desktop_entry_id: str):
+    def disable_association(self, mimetype: str, app_id: str):
         return
 
-    def enable_association(self, mimetype: str, desktop_entry_id: str):
+    def enable_association(self, mimetype: str, app_id: str):
         return
 
-    def remove_association(self, mimetype: str, desktop_entry_id: str):
+    def remove_association(self, mimetype: str, app_id: str):
         return
