@@ -2,16 +2,29 @@
 import logging
 import sys
 
-from PyQt5.QtWidgets import QMainWindow, QApplication
+from PyQt5.QtWidgets import QMainWindow, QApplication, QStyledItemDelegate
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import Qt
 
 from backend.models.mimetypeslistmodel import MimeTypesListModel
 from backend.mimetypesmanager import MimeTypesManager
 from backend.desktopentries import DesktopEntriesList
-from backend.itemdelegates import MimeTypesListDelegate
 
 from dialogs.setdefaultappdialog import SetDefaultAppDialog
+
+class MimeTypesListDelegate(QStyledItemDelegate):
+    def __init__(self, model):
+        super().__init__()
+        self.model = model
+        self.manager = model.manager
+
+    def paint(self, painter, option, index):
+        """Paint handler: bold every row where the default application has been set."""
+        mimetype = self.model.mimetypes[index.row()]
+        if self.manager.has_default(mimetype.name()):
+            option.font.setBold(True)
+
+        return super().paint(painter, option, index)
 
 class AppSelector(QMainWindow):
     """App Selector main window"""
