@@ -7,7 +7,7 @@ import os
 import pprint
 
 from dataclasses import dataclass
-from typing import List
+from typing import List, Dict
 
 from PyQt5.QtCore import Qt, QStandardPaths
 
@@ -17,24 +17,13 @@ SECTION_REMOVED = "Removed Associations"
 SECTION_MIME_CACHE = "MIME Cache"
 
 @dataclass
-class MimeTypeAppChoice:
-    """Represents a application entry when selecting the default program for a MIME type."""
-    # .desktop entry name. This should not be changed after creation since this is used to hash instances.
-    app_id: str
-
+class MimeAppChoiceSettings:
+    """Represents details for a default application choice."""
     # Whether the entry is disabled via Removed Associations
     disabled: bool = False
 
     # Whether the entry is a custom association
     custom: bool = False
-
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.app_id == other.app_id
-        return False
-
-    def __hash__(self):
-        return hash(self.app_id)
 
 class MimeTypesManager():
     """
@@ -128,7 +117,6 @@ class MimeTypesManager():
         """
         Returns the default application for the MIME type, or None if none is set.
         """
-        supported_apps = self.get_supported_apps(mimetype)
         default_entries = self.mimeapps_db[SECTION_DEFAULTS].get(mimetype, [])
         disabled_entries = self.mimeapps_db[SECTION_REMOVED].get(mimetype, [])
         for entry_id in default_entries:
@@ -151,23 +139,23 @@ class MimeTypesManager():
         """
         return
 
-    def get_supported_apps(self, mimetype: str) -> List[MimeTypeAppChoice]:
+    def get_supported_apps(self, mimetype: str) -> Dict[str, MimeAppChoiceSettings]:
         """
-        Returns a list of apps (MimeTypeAppChoice instances) that support a MIME type.
+        Returns a dict of apps (str to MimeAppChoiceSettings instances) that support a MIME type.
 
         This includes apps that support the type natively as well as custom associations added via mimeapps.list
         """
         disabled_apps = self.mimeapps_db[SECTION_REMOVED].get(mimetype, [])
 
-        results = set()
+        results = {}
         # Add all associations from .desktop entries (mimeinfo.cache)
         for app_id in self.mimeinfo_cache.get(mimetype, []):
-            results.add(MimeTypeAppChoice(app_id=app_id, disabled=app_id in disabled_apps, custom=False))
+            results[app_id] = MimeAppChoiceSettings(disabled=app_id in disabled_apps, custom=False)
         # Add all custom associations from mimeapps.list
         for app_id in self.mimeapps_db[SECTION_ADDED].get(mimetype, []):
-            results.add(MimeTypeAppChoice(app_id=app_id, disabled=app_id in disabled_apps, custom=True))
+            results[app_id] = MimeAppChoiceSettings(disabled=app_id in disabled_apps, custom=True)
 
-        return list(results)
+        return results
 
     def add_association(self, mimetype: str, desktop_entry_id: str):
         """

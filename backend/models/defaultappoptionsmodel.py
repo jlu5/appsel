@@ -9,29 +9,28 @@ class DefaultAppOptionsModel(QAbstractListModel):
     """
     A model to represent app choices in the when setting the defaults for a MIME type.
     """
-    def __init__(self, desktop_entries, apps):
+    def __init__(self, manager, mimetype, default=None):
         super().__init__()
 
-        self.desktop_entries = desktop_entries
-        self.apps = apps
+        self.manager = manager
+        self.default = self.manager.get_default_app(mimetype.name())
+        self.apps = list(self.manager.get_supported_apps(mimetype.name()).items())
 
     def data(self, index, role):
-        app = self.apps[index.row()]
+        app_id, options = self.apps[index.row()]
         if role == Qt.DisplayRole:  # Display text
             prefix = ''
-            # TODO: replace with a proper text formatter
-            # Unfortunately Qt ListView doesn't natively support rich text
-            if app.disabled:
+            if options.disabled:
                 prefix += "(disabled) "
-            if app.custom:
+            if options.custom:
                 prefix += "(custom) "
-            return prefix + self.desktop_entries.get_name(app.app_id)
+            return prefix + self.manager.desktop_entries.get_name(app_id)
         if role == Qt.DecorationRole:  # App icon
-            return self.desktop_entries.get_icon(app.app_id)
+            return self.manager.desktop_entries.get_icon(app_id)
 
     def sort(self, _column, order=Qt.AscendingOrder):
         """Sorts the model by the given column and order."""
-        self.apps.sort(reverse=order != Qt.AscendingOrder)
+        self.apps.sort(key=lambda item: item[0], reverse=order != Qt.AscendingOrder)
         self.dataChanged.emit(QModelIndex(), QModelIndex())
 
     def rowCount(self, _index):
