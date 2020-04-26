@@ -28,7 +28,7 @@
      <item>
       <widget class="QPushButton" name="setAsDefault">
        <property name="text">
-        <string>Set as default</string>
+        <string>Set / clear default</string>
        </property>
       </widget>
      </item>

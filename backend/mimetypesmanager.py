@@ -148,6 +148,20 @@ class MimeTypesManager():
         self.mimeapps_local[SECTION_DEFAULTS][mimetype] = app_id
         self._write()
 
+    def clear_default_app(self, mimetype: str):
+        """
+        Clears the user-defined default application for the MIME type.
+        """
+        logging.debug("Clearing default for %s", mimetype)
+        try:
+            current_default = self.mimeapps_local[SECTION_DEFAULTS][mimetype].strip(';')
+            del self.mimeapps_local[SECTION_DEFAULTS][mimetype]
+            self.mimeapps_db[SECTION_DEFAULTS][mimetype].remove(current_default)
+        except (KeyError, IndexError):
+            logging.warning("Tried to clear default app on mimetype %s when none was set", mimetype)
+        else:
+            self._write()
+
     def get_supported_apps(self, mimetype: str) -> Dict[str, MimeAppChoiceSettings]:
         """
         Returns a dict of apps (str to MimeAppChoiceSettings instances) that support a MIME type.
