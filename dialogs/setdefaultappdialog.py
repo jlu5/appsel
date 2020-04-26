@@ -26,7 +26,7 @@ class DefaultAppOptionsDelegate(QStyledItemDelegate):
         option.font.setItalic(options.custom)
 
         # XXX: ugly attribute chaining
-        default = self.model.manager.get_default_app(self.mimetype.name())
+        default = self.model.manager.get_default_app(self.mimetype.name(), use_fallback=False)
         option.font.setBold(default == app_id)
 
         return super().paint(painter, option, index)
@@ -69,7 +69,7 @@ class SetDefaultAppDialog(QDialog):
             app_id, _options = self.model.apps[self.current_index]
 
             # Clear the default app if it matches the system default
-            if app_id == self.manager.get_default_app(self.mimetype.name()):
+            if app_id == self.manager.get_default_app(self.mimetype.name(), use_fallback=False):
                 self.manager.clear_default_app(self.mimetype.name())
             else:
                 self.manager.set_default_app(self.mimetype.name(), app_id)

@@ -115,7 +115,7 @@ class MimeTypesManager():
         global_defaults = QStandardPaths.locateAll(QStandardPaths.ApplicationsLocation, "mimeapps.list")
         return user_defaults_per_desktop + user_defaults + global_defaults_per_desktop + global_defaults
 
-    def get_default_app(self, mimetype: str):
+    def get_default_app(self, mimetype: str, use_fallback: bool = True):
         """
         Returns the default application for the MIME type, or None if none is set.
         """
@@ -125,10 +125,11 @@ class MimeTypesManager():
             if entry_id in self.desktop_entries.entries and entry_id not in disabled_entries:
                 return entry_id
 
-        fallback_entries = self.mimeinfo_cache.get(mimetype, [])
-        for entry_id in fallback_entries:
-            if entry_id in self.desktop_entries.entries and entry_id not in disabled_entries:
-                return entry_id
+        if use_fallback:
+            fallback_entries = self.mimeinfo_cache.get(mimetype, [])
+            for entry_id in fallback_entries:
+                if entry_id in self.desktop_entries.entries and entry_id not in disabled_entries:
+                    return entry_id
         return None  # Not found
 
     def _write(self):
@@ -137,7 +138,7 @@ class MimeTypesManager():
 
     def has_default(self, mimetype: str) -> bool:
         """Returns whether a default for the MIME type was explicitly set."""
-        return mimetype in self.mimeapps_db[SECTION_DEFAULTS]
+        return mimetype in self.mimeapps_local[SECTION_DEFAULTS]
 
     def set_default_app(self, mimetype: str, app_id: str):
         """
