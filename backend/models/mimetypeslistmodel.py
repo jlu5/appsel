@@ -68,9 +68,8 @@ class MimeTypesListModel(QAbstractTableModel):
             if role == Qt.DecorationRole:  # App icon
                 return self.manager.desktop_entries.get_icon(default_app_id)
         else:  # No default app found
-            apps = self.manager.get_supported_apps(mimetype.name())
             if role == Qt.DisplayRole:
-                return f'None selected - {len(apps)} options'
+                return 'None selected'
 
         return QVariant()
 
@@ -82,7 +81,8 @@ class MimeTypesListModel(QAbstractTableModel):
         except IndexError:
             return QVariant()
 
-    def _refresh_data(self):
+    def refresh(self):
+        """Refresh the data in this model."""
         self.data.cache_clear()
         self.dataChanged.emit(QModelIndex(), QModelIndex())
 
@@ -106,7 +106,7 @@ class MimeTypesListModel(QAbstractTableModel):
 
             self.mimetypes.sort(key=_sort_by_app,
                                 reverse=order != Qt.AscendingOrder)
-        self._refresh_data()
+        self.refresh()
 
     def headerData(self, section, _orientation, role):
         if role == Qt.DisplayRole:

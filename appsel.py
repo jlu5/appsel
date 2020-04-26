@@ -45,7 +45,7 @@ class AppSelector(QMainWindow):
         # UI settings
         self._ui.typesView.setModel(self.mimetypesmodel)
         self._ui.typesView.sortByColumn(0, Qt.AscendingOrder)
-        self._ui.typesView.activated.connect(self.mime_type_settings)
+        self._ui.typesView.activated.connect(self.configure_default_application)
         self._ui.typesView.sizeHintForColumn = self.types_view_size_hint_for_column
         self._ui.typesView.resizeColumnsToContents()
         self._ui.typesView.setItemDelegate(MimeTypesListDelegate(self.mimetypesmodel))
@@ -56,10 +56,15 @@ class AppSelector(QMainWindow):
         else:
             return int(self.width() * 0.32)
 
-    def mime_type_settings(self, index):
+    def configure_default_application(self, index):
         """Launches a dialog to set the default app for a MIME type."""
         mimetype = self.mimetypesmodel.mimetypes[index.row()]  # type: QMimeType
-        SetDefaultAppDialog(self.manager, mimetype)
+        return SetDefaultAppDialog(self.manager, mimetype, parent=self)
+
+    def refresh(self):
+        """Refresh root-level model instances."""
+        logging.debug("Called root refresh() method")
+        self.mimetypesmodel.refresh()
 
 def main():
     """Entrypoint: runs program and inits UI"""

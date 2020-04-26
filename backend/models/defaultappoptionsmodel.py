@@ -14,12 +14,10 @@ class DefaultAppOptionsModel(QAbstractListModel):
 
         self.manager = manager
         self.mimetype = mimetype
-        self.default = None
-        self.refresh()
         self.apps = list(self.manager.get_supported_apps(mimetype.name()).items())
 
     def refresh(self):
-        self.default = self.manager.get_default_app(self.mimetype.name())
+        self.dataChanged.emit(QModelIndex(), QModelIndex())
 
     def data(self, index, role):
         app_id, options = self.apps[index.row()]
@@ -36,7 +34,6 @@ class DefaultAppOptionsModel(QAbstractListModel):
     def sort(self, _column, order=Qt.AscendingOrder):
         """Sorts the model by the given column and order."""
         self.apps.sort(key=lambda item: item[0], reverse=order != Qt.AscendingOrder)
-        self.dataChanged.emit(QModelIndex(), QModelIndex())
 
     def rowCount(self, _index):
         return len(self.apps)

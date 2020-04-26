@@ -141,7 +141,7 @@ class MimeTypesManager():
 
     def set_default_app(self, mimetype: str, app_id: str):
         """
-        STUB: Sets the default application for the MIME type.
+        Sets the default application for the MIME type.
         """
         logging.debug("Setting app %s as default for %s", app_id, mimetype)
         self.mimeapps_db[SECTION_DEFAULTS][mimetype] = [app_id]

@@ -4,25 +4,30 @@ import sys
 
 from PyQt5.QtWidgets import QDialog, QStyledItemDelegate
 from PyQt5.uic import loadUi
-from PyQt5.QtCore import Qt, QMimeType
+from PyQt5.QtCore import Qt, QMimeType, QModelIndex
 
 sys.path.append('..')
 from backend.models.defaultappoptionsmodel import DefaultAppOptionsModel
 
 class DefaultAppOptionsDelegate(QStyledItemDelegate):
-    def __init__(self, model):
+    def __init__(self, model: DefaultAppOptionsModel, mimetype: QMimeType):
         super().__init__()
         self.model = model
+        self.mimetype = mimetype
 
     def paint(self, painter, option, index):
         """Paint handler:
         - Strike out disabled apps
         - Italicize custom associations
-        - Bold the current default"""
+        - Bold the current default app
+        """
         app_id, options = self.model.apps[index.row()]
         option.font.setStrikeOut(options.disabled)
         option.font.setItalic(options.custom)
-        option.font.setBold(self.model.default == app_id)
+
+        # XXX: ugly attribute chaining
+        default = self.model.manager.get_default_app(self.mimetype.name())
+        option.font.setBold(default == app_id)
 
         return super().paint(painter, option, index)
 
@@ -34,9 +39,8 @@ class SetDefaultAppDialog(QDialog):
         self.manager = mimetypemanager
         self.mimetype = mimetype
 
-        # Enumerate and display a list of apps supporting this MIME type
-        #self.current_app = None
         self.model = DefaultAppOptionsModel(self.manager, mimetype)
+        self.delegate = DefaultAppOptionsDelegate(self.model, mimetype)
 
         self._ui = loadUi(self.uifile, self)
         self._ui.setWindowTitle(f"Set default application for {mimetype.name()}")
@@ -47,12 +51,8 @@ class SetDefaultAppDialog(QDialog):
         # ListView
         self._ui.appsView.setModel(self.model)
         #self._ui.appsView.currentChanged = self.on_row_changed
-        self._ui.appsView.setItemDelegate(DefaultAppOptionsDelegate(self.model))
+        self._ui.appsView.setItemDelegate(self.delegate)
         self._ui.show()
-
-    def _refresh(self):
-        self.model.refresh()
-        self._ui.appsView.repaint()
 
     def add_application(self, event):
         # TODO: stub
@@ -65,7 +65,9 @@ class SetDefaultAppDialog(QDialog):
             selected_idx = selection[0]
             app_id, _options = self.model.apps[selected_idx.row()]
             self.manager.set_default_app(self.mimetype.name(), app_id)
-        self._refresh()
+            self.model.refresh()
+            if self._app:
+                self._app.refresh()
 
     def remove_application(self, event):
         # TODO: stub
