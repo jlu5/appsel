@@ -148,7 +148,7 @@ class MimeTypesManager():
         """
         logging.debug("Setting app %s as default for %s", app_id, mimetype)
         self.mimeapps_db[SECTION_DEFAULTS][mimetype] = [app_id]
-        self.mimeapps_local[SECTION_DEFAULTS][mimetype] = app_id
+        self.mimeapps_local.set(SECTION_DEFAULTS, mimetype, app_id)
         self._write()
 
     def clear_default_app(self, mimetype: str):
@@ -157,11 +157,12 @@ class MimeTypesManager():
         """
         logging.debug("Clearing default for %s", mimetype)
         try:
-            current_default = self.mimeapps_local[SECTION_DEFAULTS][mimetype].strip(';')
-            del self.mimeapps_local[SECTION_DEFAULTS][mimetype]
+            # pylint: disable=no-member; false positive from custom converter
+            current_default = self.mimeapps_local.getlist(SECTION_DEFAULTS, mimetype)[0]
+            self.mimeapps_local.remove_option(SECTION_DEFAULTS, mimetype)
             self.mimeapps_db[SECTION_DEFAULTS][mimetype].remove(current_default)
-        except (KeyError, IndexError):
-            logging.warning("Tried to clear default app on mimetype %s when none was set", mimetype)
+        except (KeyError, IndexError, configparser.NoSectionError):
+            logging.warning("Tried to clear default app on mimetype %s when none was set", mimetype, exc_info=True)
         else:
             self._write()
 
