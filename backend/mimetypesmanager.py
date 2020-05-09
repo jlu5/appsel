@@ -30,6 +30,7 @@ class MimeTypesManager():
     Class to enumerate and manage default applications for MIME types.
     All functions in this class expect MIME types as strings instead of QMimeType instances.
     """
+    CONFIGPARSER_CONVERTERS = {'list': lambda value: [app for app in value.strip(';').split(';')]}
     def __init__(self, desktop_entries: str, *, paths: List[str] = None, cache_paths: List[str] = None) -> List[str]:
         self.desktop_entries = desktop_entries
 
@@ -57,7 +58,7 @@ class MimeTypesManager():
         # since that overrides already seen keys
         self.mimeapps_db.clear()
         for path in paths:
-            loader = configparser.ConfigParser()
+            loader = configparser.ConfigParser(converters=self.CONFIGPARSER_CONVERTERS)
             loader.read(path)
             logging.debug("Reading mimeapps.list entries from %s", path)
 
@@ -70,10 +71,10 @@ class MimeTypesManager():
             for section in {SECTION_ADDED, SECTION_DEFAULTS, SECTION_REMOVED}:
                 if loader.has_section(section):
                     db_section = self.mimeapps_db[section]
-                    for key, value in loader[section].items():
-                        value = value.strip(';').split(';')
+                    for key in loader.options(section):
                         existing = db_section.get(key, [])
-                        db_section[key] = existing + value
+                        # pylint: disable=no-member; false positive from custom converter
+                        db_section[key] = existing + loader.getlist(section, key)
 
     def _initialize_mimeinfo_cache(self, paths=None):
         """Initialize mimeinfo.cache store, which is used to map MIME apps to a list of programs that handle them.
@@ -84,13 +85,14 @@ class MimeTypesManager():
 
         self.mimeinfo_cache.clear()
         for path in paths:
-            loader = configparser.ConfigParser(strict=False)  # Ignore duplicates when parsing
+            # strict=False Ignore duplicates when parsing
+            loader = configparser.ConfigParser(strict=False, converters=self.CONFIGPARSER_CONVERTERS)
             loader.read(path)
             logging.debug("Reading mimeinfo.cache entries from %s", path)
             if loader.has_section(SECTION_MIME_CACHE):
-                for key, value in loader[SECTION_MIME_CACHE].items():
-                    values = value.strip(';').split(';')
-                    self.mimeinfo_cache[key] += values
+                for key in loader.options(SECTION_MIME_CACHE):
+                    # pylint: disable=no-member; false positive from custom converter
+                    self.mimeinfo_cache[key] += loader.getlist(SECTION_MIME_CACHE, key)
 
     @staticmethod
     def _get_mimeapps_list_paths():
