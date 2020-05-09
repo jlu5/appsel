@@ -177,10 +177,23 @@ class MimeTypesManager():
         results = {}
         # Add all associations from .desktop entries (mimeinfo.cache)
         for app_id in self.mimeinfo_cache.get(mimetype, []):
-            results[app_id] = MimeAppChoiceSettings(disabled=app_id in disabled_apps, custom=False)
+            disabled = app_id in disabled_apps
+            # XXX: Mark as enabled apps that have been disabled at the global level but aren't at the local level.
+            # Technically the XDG Mime spec tells us to apply mimeapps.list removed associations at each path
+            # containing desktop entries, but we simplify to only store one global mimeapps.list DB.
+            local_apps_path = QStandardPaths.writableLocation(QStandardPaths.ApplicationsLocation)
+            if self.desktop_entries.desktop_entry_paths.get(app_id, '').startswith(local_apps_path) and \
+                    app_id not in self.mimeapps_local.getlist(SECTION_REMOVED, mimetype, fallback=[]):
+                logging.info("Overriding global Removed Associations state for app_id=%s, mimetype=%s",
+                             app_id, mimetype)
+                disabled = False
+            results[app_id] = MimeAppChoiceSettings(disabled=disabled, custom=False)
         # Add all custom associations from mimeapps.list
         for app_id in self.mimeapps_db[SECTION_ADDED].get(mimetype, []):
-            results[app_id] = MimeAppChoiceSettings(disabled=app_id in disabled_apps, custom=True)
+            if app_id in disabled_apps:
+                logging.warning("Found app %s in both added and removed associations section? This is invalid. (mimetype=%s)",
+                                app_id, mimetype)
+            results[app_id] = MimeAppChoiceSettings(disabled=False, custom=True)
 
         return results
 
@@ -191,9 +204,39 @@ class MimeTypesManager():
         return
 
     def disable_association(self, mimetype: str, app_id: str):
+        """Disable an association for a mimetype."""
+        # Add the app to both the local DB and the combined state (global and local entries)
+        # pylint: disable=no-member; false positive from custom converter
+        if app_id in self.mimeapps_db[SECTION_ADDED].get(mimetype, []):
+            logging.warning("Disabling custom associations is not supported, they should instead be removed (mimetype=%s, app_id=%s).",
+                            mimetype, app_id)
+            return
+        disabled_apps_local = self.mimeapps_local.getlist(SECTION_REMOVED, mimetype, fallback=True)
+        disabled_apps_local.append(app_id)
+        self.mimeapps_local.set(SECTION_REMOVED, mimetype, ';'.join(disabled_apps_local))
+        self._write()
+
+        disabled_apps = self.mimeapps_db[SECTION_REMOVED].get(mimetype, [])
+        disabled_apps.append(app_id)
+
         return
 
     def enable_association(self, mimetype: str, app_id: str):
+        """Enables an association for a mimetype."""
+        disabled_apps_local = self.mimeapps_local.getlist(SECTION_REMOVED, mimetype, fallback=[])
+        if app_id not in disabled_apps_local:
+            logging.warning("Cannot enable entry %s for mimetype %s; it is not disabled at the local level.",
+                            app_id, mimetype)
+            return
+
+        disabled_apps_local.remove(app_id)
+        self.mimeapps_local.set(SECTION_REMOVED, mimetype, ';'.join(disabled_apps_local))
+        self._write()
+
+        # Update the global state as well
+        disabled_apps = self.mimeapps_db[SECTION_REMOVED].get(mimetype, [])
+        if app_id in disabled_apps:
+            disabled_apps.remove(app_id)
         return
 
     def remove_association(self, mimetype: str, app_id: str):
