@@ -3,7 +3,7 @@ import enum
 import logging
 import sys
 
-from PyQt5.QtWidgets import QDialog, QStyledItemDelegate
+from PyQt5.QtWidgets import QDialog, QStyledItemDelegate, QMessageBox
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import QMimeType
 
@@ -72,6 +72,11 @@ class SetDefaultAppDialog(QDialog):
         self._ui.show()
 
     def _update_toggle_action(self):
+        """Update the action pointed to by the toggle / remove application button."""
+        if self.current_index is None:
+            self.current_toggle_option = None
+            return
+
         _app_id, options = self.model.apps[self.current_index]
         # XXX: internationalize text strings
         if options.disabled:
@@ -89,12 +94,17 @@ class SetDefaultAppDialog(QDialog):
             self.current_index = selected.indexes()[0].row()
             self._update_toggle_action()
 
-    def on_add_application(self, event):
-        # TODO: stub
+    def on_add_application(self, _event):
+        # XXX: stub. Implement this once we have a model to list all known applications
+        QMessageBox.warning(self, "Not implemented", "This feature is not implemented yet. "
+                            "Please use your file manager to add custom handlers to file types.")
         return
 
     def _refresh(self):
         self.model.refresh()
+        if self.current_index >= len(self.model.apps):
+            # We just removed the last application in the list, so the current selected index is no longer valid.
+            self.current_index = None
         if self._app:
             self._app.refresh()
 

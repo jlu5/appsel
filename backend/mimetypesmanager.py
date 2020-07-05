@@ -181,6 +181,7 @@ class MimeTypesManager():
             # Technically the XDG Mime spec tells us to apply mimeapps.list removed associations at each path
             # containing desktop entries, but we simplify to only store one global mimeapps.list DB.
             local_apps_path = QStandardPaths.writableLocation(QStandardPaths.ApplicationsLocation)
+            # pylint: disable=no-member
             if self.desktop_entries.desktop_entry_paths.get(app_id, '').startswith(local_apps_path) and \
                     app_id not in self.mimeapps_local.getlist(SECTION_REMOVED, mimetype, fallback=[]):
                 logging.info("Overriding global Removed Associations state for app_id=%s, mimetype=%s",
@@ -220,6 +221,7 @@ class MimeTypesManager():
 
     def enable_association(self, mimetype: str, app_id: str):
         """Enables an association for a mimetype."""
+        # Add the app to the "Removed Associations" section of the local mimeapps.list
         # pylint: disable=no-member; false positive from custom converter
         disabled_apps_local = self.mimeapps_local.getlist(SECTION_REMOVED, mimetype, fallback=[])
         if app_id not in disabled_apps_local:
@@ -237,4 +239,21 @@ class MimeTypesManager():
             disabled_apps.remove(app_id)
 
     def remove_association(self, mimetype: str, app_id: str):
-        return
+        """Removes a custom association for a mimetype."""
+        # This closely mirrors the logic of enable_association(). Instead of removing from a list of
+        # disabled associations, this removes from a list of added associations.
+        # pylint: disable=no-member; false positive from custom converter
+        custom_apps_local = self.mimeapps_local.getlist(SECTION_ADDED, mimetype, fallback=[])
+        if app_id not in custom_apps_local:
+            logging.warning("Cannot remove entry %s for mimetype %s; it is not a custom app at the local level.",
+                            app_id, mimetype)
+            return
+
+        custom_apps_local.remove(app_id)
+        self.mimeapps_local.set(SECTION_ADDED, mimetype, ';'.join(custom_apps_local))
+        self._write()
+
+        # Update the global state as well
+        custom_apps = self.mimeapps_db[SECTION_ADDED].get(mimetype, [])
+        if app_id in custom_apps:
+            custom_apps.remove(app_id)
