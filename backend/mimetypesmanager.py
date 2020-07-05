@@ -147,7 +147,7 @@ class MimeTypesManager():
         """
         logging.debug("Setting app %s as default for %s", app_id, mimetype)
         self.mimeapps_db[SECTION_DEFAULTS][mimetype] = [app_id]
-        self.mimeapps_local.set(SECTION_DEFAULTS, mimetype, app_id)
+        self.mimeapps_local[SECTION_DEFAULTS][mimetype] = app_id
         self._write()
 
     def clear_default_app(self, mimetype: str):
@@ -213,11 +213,16 @@ class MimeTypesManager():
             return
         disabled_apps_local = self.mimeapps_local.getlist(SECTION_REMOVED, mimetype, fallback=[])
         disabled_apps_local.append(app_id)
-        self.mimeapps_local.set(SECTION_REMOVED, mimetype, ';'.join(disabled_apps_local))
+        if disabled_apps_local:
+            self.mimeapps_local[SECTION_REMOVED][mimetype] = ';'.join(disabled_apps_local)
+        else:
+            del self.mimeapps_local[SECTION_REMOVED][mimetype]
         self._write()
 
         disabled_apps = self.mimeapps_db[SECTION_REMOVED].get(mimetype, [])
         disabled_apps.append(app_id)
+        logging.debug('Removed associations for %s is now %s in local copy', mimetype, disabled_apps_local)
+        logging.debug('Removed associations for %s is now %s in global cache', mimetype, disabled_apps)
 
     def enable_association(self, mimetype: str, app_id: str):
         """Enables an association for a mimetype."""
@@ -230,13 +235,18 @@ class MimeTypesManager():
             return
 
         disabled_apps_local.remove(app_id)
-        self.mimeapps_local.set(SECTION_REMOVED, mimetype, ';'.join(disabled_apps_local))
+        if disabled_apps_local:
+            self.mimeapps_local[SECTION_REMOVED][mimetype] = ';'.join(disabled_apps_local)
+        else:
+            del self.mimeapps_local[SECTION_REMOVED][mimetype]
         self._write()
 
         # Update the global state as well
         disabled_apps = self.mimeapps_db[SECTION_REMOVED].get(mimetype, [])
         if app_id in disabled_apps:
             disabled_apps.remove(app_id)
+        logging.debug('Removed associations for %s is now %s in local copy', mimetype, disabled_apps_local)
+        logging.debug('Removed associations for %s is now %s in global cache', mimetype, disabled_apps)
 
     def remove_association(self, mimetype: str, app_id: str):
         """Removes a custom association for a mimetype."""
@@ -250,7 +260,10 @@ class MimeTypesManager():
             return
 
         custom_apps_local.remove(app_id)
-        self.mimeapps_local.set(SECTION_ADDED, mimetype, ';'.join(custom_apps_local))
+        if custom_apps_local:
+            self.mimeapps_local[SECTION_ADDED][mimetype] = ';'.join(custom_apps_local)
+        else:
+            del self.mimeapps_local[SECTION_ADDED][mimetype]
         self._write()
 
         # Update the global state as well
