@@ -4,12 +4,11 @@ import configparser
 import itertools
 import logging
 import os
-import pprint
 
 from dataclasses import dataclass
 from typing import List, Dict
 
-from PyQt5.QtCore import Qt, QStandardPaths
+from PyQt5.QtCore import QStandardPaths
 
 SECTION_DEFAULTS = "Default Applications"
 SECTION_ADDED = "Added Associations"
@@ -211,7 +210,7 @@ class MimeTypesManager():
             logging.warning("Disabling custom associations is not supported, they should instead be removed (mimetype=%s, app_id=%s).",
                             mimetype, app_id)
             return
-        disabled_apps_local = self.mimeapps_local.getlist(SECTION_REMOVED, mimetype, fallback=True)
+        disabled_apps_local = self.mimeapps_local.getlist(SECTION_REMOVED, mimetype, fallback=[])
         disabled_apps_local.append(app_id)
         self.mimeapps_local.set(SECTION_REMOVED, mimetype, ';'.join(disabled_apps_local))
         self._write()
@@ -219,10 +218,9 @@ class MimeTypesManager():
         disabled_apps = self.mimeapps_db[SECTION_REMOVED].get(mimetype, [])
         disabled_apps.append(app_id)
 
-        return
-
     def enable_association(self, mimetype: str, app_id: str):
         """Enables an association for a mimetype."""
+        # pylint: disable=no-member; false positive from custom converter
         disabled_apps_local = self.mimeapps_local.getlist(SECTION_REMOVED, mimetype, fallback=[])
         if app_id not in disabled_apps_local:
             logging.warning("Cannot enable entry %s for mimetype %s; it is not disabled at the local level.",
@@ -237,7 +235,6 @@ class MimeTypesManager():
         disabled_apps = self.mimeapps_db[SECTION_REMOVED].get(mimetype, [])
         if app_id in disabled_apps:
             disabled_apps.remove(app_id)
-        return
 
     def remove_association(self, mimetype: str, app_id: str):
         return

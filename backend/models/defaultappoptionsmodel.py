@@ -14,10 +14,13 @@ class DefaultAppOptionsModel(QAbstractListModel):
 
         self.manager = manager
         self.mimetype = mimetype
-        self.apps = list(self.manager.get_supported_apps(mimetype.name()).items())
+        self.apps = None
+        self.refresh(first_run=True)
 
-    def refresh(self):
-        self.dataChanged.emit(QModelIndex(), QModelIndex())
+    def refresh(self, first_run=False):
+        self.apps = list(self.manager.get_supported_apps(self.mimetype.name()).items())
+        if not first_run:
+            self.dataChanged.emit(QModelIndex(), QModelIndex())
 
     def data(self, index, role):
         app_id, options = self.apps[index.row()]

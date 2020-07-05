@@ -40,7 +40,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="removeApplication">
+      <widget class="QPushButton" name="toggleApplication">
        <property name="text">
         <string>Remove application</string>
        </property>
