@@ -102,9 +102,6 @@ class SetDefaultAppDialog(QDialog):
 
     def _refresh(self):
         self.model.refresh()
-        if self.current_index >= len(self.model.apps):
-            # We just removed the last application in the list, so the current selected index is no longer valid.
-            self.current_index = None
         if self._app:
             self._app.refresh()
 
@@ -132,6 +129,7 @@ class SetDefaultAppDialog(QDialog):
             self.manager.disable_association(self.mimetype.name(), app_id)
         elif self.current_toggle_option is ToggleApplicationAction.REMOVE:
             self.manager.remove_association(self.mimetype.name(), app_id)
+            self.current_index = None
         else:
             logging.warning("Cannot toggle / remove application: current toggle option is not set: %s",
                             self.current_toggle_option, exc_info=True)
