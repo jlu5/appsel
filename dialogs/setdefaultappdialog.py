@@ -30,13 +30,10 @@ class DefaultAppOptionsDelegate(QStyledItemDelegate):
         - Italicize custom associations
         - Bold the current default app
         """
-        app_id, options = self.model.apps[index.row()]
+        _app_id, options = self.model.apps[index.row()]
         option.font.setStrikeOut(options.disabled)
         option.font.setItalic(options.custom)
-
-        # XXX: ugly attribute chaining
-        default = self.model.manager.get_default_app(self.mimetype.name(), use_fallback=False)
-        option.font.setBold(default == app_id)
+        option.font.setBold(options.default)
 
         return super().paint(painter, option, index)
 

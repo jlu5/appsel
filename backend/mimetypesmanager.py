@@ -24,6 +24,9 @@ class MimeAppChoiceSettings:
     # Whether the entry is a custom association
     custom: bool = False
 
+    # Whether the entry is set as default
+    default: bool = False
+
 class MimeTypesManager():
     """
     Class to enumerate and manage default applications for MIME types.
@@ -172,6 +175,7 @@ class MimeTypesManager():
         This includes apps that support the type natively as well as custom associations added via mimeapps.list
         """
         disabled_apps = self.mimeapps_db[SECTION_REMOVED].get(mimetype, [])
+        default_app = self.get_default_app(mimetype, use_fallback=False)
 
         results = {}
         # Add all associations from .desktop entries (mimeinfo.cache)
@@ -187,13 +191,13 @@ class MimeTypesManager():
                 logging.info("Overriding global Removed Associations state for app_id=%s, mimetype=%s",
                              app_id, mimetype)
                 disabled = False
-            results[app_id] = MimeAppChoiceSettings(disabled=disabled, custom=False)
+            results[app_id] = MimeAppChoiceSettings(disabled=disabled, custom=False, default=app_id == default_app)
         # Add all custom associations from mimeapps.list
         for app_id in self.mimeapps_db[SECTION_ADDED].get(mimetype, []):
             if app_id in disabled_apps:
                 logging.warning("Found app %s in both added and removed associations section? This is invalid. (mimetype=%s)",
                                 app_id, mimetype)
-            results[app_id] = MimeAppChoiceSettings(disabled=False, custom=True)
+            results[app_id] = MimeAppChoiceSettings(disabled=False, custom=True, default=app_id == default_app)
 
         return results
 
