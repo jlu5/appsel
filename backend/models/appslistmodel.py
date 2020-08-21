@@ -1,6 +1,6 @@
 
 # pylint: disable=invalid-name
-from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
+from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex, QVariant
 
 class AppsListModel(QAbstractListModel):
     """
@@ -13,7 +13,7 @@ class AppsListModel(QAbstractListModel):
         self.sort(0)
 
     def refresh(self, first_run=False):
-        self.apps = list(self.desktop_entries.entries)
+        self.apps = list(filter(self.desktop_entries.is_shown, self.desktop_entries.entries))
         if not first_run:
             self.dataChanged.emit(QModelIndex(), QModelIndex())
 
@@ -30,7 +30,7 @@ class AppsListModel(QAbstractListModel):
                        reverse=order != Qt.AscendingOrder)
 
     def rowCount(self, _index):
-        return len(self.desktop_entries.entries)
+        return len(self.apps)
 
     def columnCount(self, _index):
         return 1

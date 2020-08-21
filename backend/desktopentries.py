@@ -1,7 +1,7 @@
-import collections
 import logging
 import os
 import os.path
+import shutil
 
 from typing import List
 
@@ -68,9 +68,8 @@ class DesktopEntriesList():
 
         Apps are displayed if they meet the following criteria:
         1) Desktop entry is not marked NoDisplay or Hidden
-        2) The desktop entry supports at least 1 mime type
-        3) The OnlyShowIn and NotShowIn criteria are met for the desktop entry
-        4) The path pointed to by TryExec exists, if the field exists
+        2) The OnlyShowIn and NotShowIn criteria are met for the desktop entry
+        3) The path pointed to by TryExec exists, if the field exists
         """
         try:
             entry = self.entries[desktop_entry_id]
@@ -78,9 +77,6 @@ class DesktopEntriesList():
             return False
 
         if entry.getHidden() or entry.getNoDisplay():
-            return False
-
-        if not entry.getMimeTypes():
             return False
 
         current_desktops = set(os.environ.get('XDG_CURRENT_DESKTOP', '').split(':'))
@@ -96,8 +92,12 @@ class DesktopEntriesList():
             return False
 
         tryexec = entry.getTryExec()
-        if tryexec and not os.path.exists(tryexec):
-            logging.debug("Not showing desktop entry %s because TryExec path %s does not exist",
-                          desktop_entry_id, tryexec)
-            return False
+        if tryexec:
+            if not os.path.isabs(tryexec):
+                # tryexec path can be absolute or relative
+                tryexec = shutil.which(tryexec)
+            if tryexec is None or not os.path.exists(tryexec):
+                logging.debug("Not showing desktop entry %s because TryExec path %s does not exist",
+                            desktop_entry_id, tryexec)
+                return False
         return True
