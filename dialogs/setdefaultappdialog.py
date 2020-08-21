@@ -8,6 +8,7 @@ from PyQt5.uic import loadUi
 from PyQt5.QtCore import QMimeType
 
 sys.path.append('..')
+from .addcustomappdialog import AddCustomAppDialog
 from backend.models.defaultappoptionsmodel import DefaultAppOptionsModel
 
 class ToggleApplicationAction(enum.Enum):
@@ -92,10 +93,10 @@ class SetDefaultAppDialog(QDialog):
             self._update_toggle_action()
 
     def on_add_application(self, _event):
-        # XXX: stub. Implement this once we have a model to list all known applications
-        QMessageBox.warning(self, "Not implemented", "This feature is not implemented yet. "
-                            "Please use your file manager to add custom handlers to file types.")
-        return
+        dlg = AddCustomAppDialog(self.manager.desktop_entries)
+        if dlg.exec_():
+            self.manager.add_association(self.mimetype.name(), dlg.get_selected_app())
+            self._refresh()
 
     def _refresh(self):
         self.model.refresh()
