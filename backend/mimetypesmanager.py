@@ -201,32 +201,53 @@ class MimeTypesManager():
 
         return results
 
+    def _update_list(self, mimetype: str, app_id: str, section: str, *, remove: bool = False):
+        """
+        Helper: adds or removes app_id to the specified section for mimetype.
+        """
+        # Add the app to both the local DB and the combined state (global and local entries)
+        # pylint: disable=no-member; false positive from custom converter
+        applist_local = self.mimeapps_local.getlist(section, mimetype, fallback=[])
+        if remove:
+            try:
+                applist_local.remove(app_id)
+            except ValueError:
+                pass
+        else:
+            if app_id not in applist_local:
+                applist_local.append(app_id)
+        if applist_local:
+            self.mimeapps_local[section][mimetype] = ';'.join(applist_local)
+        else:
+            del self.mimeapps_local[section][mimetype]
+        self._write()
+
+        applist_global = self.mimeapps_db[section].setdefault(mimetype, [])
+        if remove:
+            try:
+                applist_global.remove(app_id)
+            except ValueError:
+                pass
+        else:
+            if app_id not in applist_global:
+                applist_global.append(app_id)
+        logging.debug('%s for %s is now %s in local copy', section, mimetype, applist_local)
+        logging.debug('%s for %s is now %s in global cache', section, mimetype, applist_global)
+
     def add_association(self, mimetype: str, app_id: str):
         """
-        STUB: Registers a new desktop entry to the MIME type.
+        Registers a new desktop entry to the MIME type.
         """
-        return
+        self._update_list(mimetype, app_id, SECTION_ADDED, remove=False)
 
     def disable_association(self, mimetype: str, app_id: str):
         """Disable an association for a mimetype."""
-        # Add the app to both the local DB and the combined state (global and local entries)
-        # pylint: disable=no-member; false positive from custom converter
         if app_id in self.mimeapps_db[SECTION_ADDED].get(mimetype, []):
             logging.warning("Disabling custom associations is not supported, they should instead be removed (mimetype=%s, app_id=%s).",
                             mimetype, app_id)
             return
-        disabled_apps_local = self.mimeapps_local.getlist(SECTION_REMOVED, mimetype, fallback=[])
-        disabled_apps_local.append(app_id)
-        if disabled_apps_local:
-            self.mimeapps_local[SECTION_REMOVED][mimetype] = ';'.join(disabled_apps_local)
-        else:
-            del self.mimeapps_local[SECTION_REMOVED][mimetype]
-        self._write()
 
-        disabled_apps = self.mimeapps_db[SECTION_REMOVED].setdefault(mimetype, [])
-        disabled_apps.append(app_id)
-        logging.debug('Removed associations for %s is now %s in local copy', mimetype, disabled_apps_local)
-        logging.debug('Removed associations for %s is now %s in global cache', mimetype, disabled_apps)
+        self._update_list(mimetype, app_id, SECTION_REMOVED, remove=False)
 
     def enable_association(self, mimetype: str, app_id: str):
         """Enables an association for a mimetype."""
@@ -238,19 +259,7 @@ class MimeTypesManager():
                             app_id, mimetype)
             return
 
-        disabled_apps_local.remove(app_id)
-        if disabled_apps_local:
-            self.mimeapps_local[SECTION_REMOVED][mimetype] = ';'.join(disabled_apps_local)
-        else:
-            del self.mimeapps_local[SECTION_REMOVED][mimetype]
-        self._write()
-
-        # Update the global state as well
-        disabled_apps = self.mimeapps_db[SECTION_REMOVED].setdefault(mimetype, [])
-        if app_id in disabled_apps:
-            disabled_apps.remove(app_id)
-        logging.debug('Removed associations for %s is now %s in local copy', mimetype, disabled_apps_local)
-        logging.debug('Removed associations for %s is now %s in global cache', mimetype, disabled_apps)
+        self._update_list(mimetype, app_id, SECTION_REMOVED, remove=True)
 
     def remove_association(self, mimetype: str, app_id: str):
         """Removes a custom association for a mimetype."""
@@ -263,14 +272,4 @@ class MimeTypesManager():
                             app_id, mimetype)
             return
 
-        custom_apps_local.remove(app_id)
-        if custom_apps_local:
-            self.mimeapps_local[SECTION_ADDED][mimetype] = ';'.join(custom_apps_local)
-        else:
-            del self.mimeapps_local[SECTION_ADDED][mimetype]
-        self._write()
-
-        # Update the global state as well
-        custom_apps = self.mimeapps_db[SECTION_ADDED].setdefault(mimetype, [])
-        if app_id in custom_apps:
-            custom_apps.remove(app_id)
+        self._update_list(mimetype, app_id, SECTION_ADDED, remove=True)
