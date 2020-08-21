@@ -12,6 +12,8 @@ from backend.desktopentries import DesktopEntriesList
 
 from dialogs.setdefaultappdialog import SetDefaultAppDialog
 
+__version__ = '0.1.0'
+
 class MimeTypesListDelegate(QStyledItemDelegate):
     def __init__(self, model):
         super().__init__()
@@ -70,6 +72,8 @@ def main():
     """Entrypoint: runs program and inits UI"""
     logging.basicConfig(level=logging.DEBUG)
     app = QApplication(sys.argv)
+    app.setApplicationName('appsel')
+    app.setApplicationVersion(__version__)
     AppSelector(app, "ui/appsel.ui")
     sys.exit(app.exec_())
 
