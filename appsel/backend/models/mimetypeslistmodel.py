@@ -1,7 +1,5 @@
 
 # pylint: disable=invalid-name
-import functools
-
 from PyQt5.QtCore import Qt, QAbstractTableModel, QMimeDatabase, QVariant, QModelIndex
 from PyQt5.QtGui import QIcon
 
@@ -16,6 +14,7 @@ class MimeTypesListModel(QAbstractTableModel):
         self.manager = mimetypemanager
         self.mimetypes = []
         self.load_mime_types()
+        self._default_app_cache = {}
 
     def load_mime_types(self):
         self.mimetypes.clear()
@@ -60,7 +59,10 @@ class MimeTypesListModel(QAbstractTableModel):
     def _get_default_app(self, index, role):
         """Returns display data for the default application column."""
         mimetype = self.mimetypes[index.row()]
-        default_app_id = self.manager.get_default_app(mimetype.name())
+        if mimetype.name() in self._default_app_cache:
+            default_app_id = self._default_app_cache[mimetype.name()]
+        else:
+            self._default_app_cache[mimetype.name()] = default_app_id = self.manager.get_default_app(mimetype.name())
 
         if default_app_id:
             if role == Qt.DisplayRole:  # Display text
@@ -73,7 +75,6 @@ class MimeTypesListModel(QAbstractTableModel):
 
         return QVariant()
 
-    @functools.lru_cache(maxsize=None)
     def data(self, index, role):
         accessors = [self._get_mimetype, self._get_extensions, self._get_status, self._get_default_app]
         try:
@@ -83,7 +84,7 @@ class MimeTypesListModel(QAbstractTableModel):
 
     def refresh(self):
         """Refresh the data in this model."""
-        self.data.cache_clear()
+        self._default_app_cache.clear()
         self.dataChanged.emit(QModelIndex(), QModelIndex())
 
     def sort(self, column, order=Qt.AscendingOrder):
