@@ -1,7 +1,8 @@
 
 # pylint: disable=invalid-name
 from PyQt5.QtCore import Qt, QAbstractTableModel, QMimeDatabase, QVariant, QModelIndex
-from PyQt5.QtGui import QIcon
+
+from appsel.backend import utils
 
 class MimeTypesListModel(QAbstractTableModel):
 
@@ -10,8 +11,8 @@ class MimeTypesListModel(QAbstractTableModel):
     def __init__(self, mimetypemanager):
         super().__init__()
 
-        self.db = QMimeDatabase()
         self.manager = mimetypemanager
+        self.db = mimetypemanager.qmimedb
         self.mimetypes = []
         self.load_mime_types()
         self._default_app_cache = {}
@@ -30,11 +31,7 @@ class MimeTypesListModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             return mimetype.name()
         if role == Qt.DecorationRole:
-            # Show the icon for the MIME type, falling back to the generic type icon
-            # or the "unknown type" icon if it's missing in the current icon theme
-            fallback_unknown = QIcon.fromTheme("unknown")
-            fallback_generic = QIcon.fromTheme(mimetype.genericIconName(), fallback_unknown)
-            return QIcon.fromTheme(mimetype.iconName(), fallback_generic)
+            return utils.get_mimetype_icon(mimetype)
 
         return QVariant()
 
@@ -115,7 +112,13 @@ class MimeTypesListModel(QAbstractTableModel):
         return QVariant()
 
     def rowCount(self, _index):
+        """
+        Return list of rows in the model.
+        """
         return len(self.mimetypes)
 
     def columnCount(self, _index):
+        """
+        Return list of columns in the model.
+        """
         return len(self.COLUMNS)

@@ -7,9 +7,12 @@ from PyQt5.uic import loadUi
 from PyQt5.QtCore import Qt
 
 from appsel.backend.models.mimetypeslistmodel import MimeTypesListModel
+from appsel.backend.models.appslistmodel import AppsListModel
 from appsel.backend.mimetypesmanager import MimeTypesManager
 from appsel.backend.desktopentries import DesktopEntriesList
+
 from appsel.dialogs.setdefaultappdialog import SetDefaultAppDialog
+from appsel.dialogs.setdefaultsbyappdialog import SetDefaultsByAppDialog
 
 __version__ = '0.1.0'
 
@@ -40,6 +43,7 @@ class AppSelector(QMainWindow):
         self.desktop_entries = DesktopEntriesList()
         self.manager = MimeTypesManager(self.desktop_entries)
         self.mimetypesmodel = MimeTypesListModel(self.manager)
+        self.appslistmodel = AppsListModel(self.desktop_entries)
 
         # UI bindings
         self._ui.typesView.setModel(self.mimetypesmodel)
@@ -48,6 +52,8 @@ class AppSelector(QMainWindow):
         self._ui.typesView.sizeHintForColumn = self.types_view_size_hint_for_column
         self._ui.typesView.resizeColumnsToContents()
         self._ui.typesView.setItemDelegate(MimeTypesListDelegate(self.mimetypesmodel))
+        self._ui.appsView.setModel(self.appslistmodel)
+        self._ui.appsView.activated.connect(self.configure_defaults_by_app)
 
     def types_view_size_hint_for_column(self, column):
         if column in {1, 2}:  # File Extensions, Status
@@ -59,6 +65,11 @@ class AppSelector(QMainWindow):
         """Launches a dialog to set the default app for a MIME type."""
         mimetype = self.mimetypesmodel.mimetypes[index.row()]  # type: QMimeType
         return SetDefaultAppDialog(self.manager, mimetype, parent=self)
+
+    def configure_defaults_by_app(self, index):
+        """Launches a dialog to set default associations by application."""
+        app_id = self.appslistmodel.apps[index.row()]  # type: QMimeType
+        return SetDefaultsByAppDialog(self.manager, app_id, parent=self)
 
     def refresh(self):
         """Refresh root-level model instances."""

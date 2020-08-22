@@ -1,3 +1,6 @@
+"""
+Enumerate application .desktop entries on the system
+"""
 import logging
 import os
 import os.path

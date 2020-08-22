@@ -1,9 +1,6 @@
 
 # pylint: disable=invalid-name
-import functools
-
-from PyQt5.QtCore import Qt, QAbstractListModel, QVariant, QModelIndex, QMimeType
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex, QMimeType
 
 class DefaultAppOptionsModel(QAbstractListModel):
     """
@@ -39,4 +36,7 @@ class DefaultAppOptionsModel(QAbstractListModel):
         self.apps.sort(key=lambda item: item[0], reverse=order != Qt.AscendingOrder)
 
     def rowCount(self, _index):
+        """
+        Return list of rows in the model.
+        """
         return len(self.apps)

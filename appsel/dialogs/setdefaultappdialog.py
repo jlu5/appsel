@@ -1,41 +1,20 @@
 #!/usr/bin/env python3
 import enum
 import logging
-import sys
 
-from PyQt5.QtWidgets import QDialog, QStyledItemDelegate, QMessageBox
+from PyQt5.QtWidgets import QDialog
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import QMimeType
 
-from .addcustomappdialog import AddCustomAppDialog
+from .addcustomappdialog import AddCustomAppDialog  # pylint: disable=relative-beyond-top-level
 from appsel.backend.models.defaultappoptionsmodel import DefaultAppOptionsModel
+from appsel.itemdelegates import DefaultAppOptionsDelegate
 
 class ToggleApplicationAction(enum.Enum):
     """Represents the action taken by the Disable / Enable / Remove application button."""
     DISABLE = 0
     ENABLE = 1
     REMOVE = 2
-
-class DefaultAppOptionsDelegate(QStyledItemDelegate):
-    """
-    Provides custom styling for the default app chooser list view."""
-    def __init__(self, model: DefaultAppOptionsModel, mimetype: QMimeType):
-        super().__init__()
-        self.model = model
-        self.mimetype = mimetype
-
-    def paint(self, painter, option, index):
-        """Paint handler:
-        - Strike out disabled apps
-        - Italicize custom associations
-        - Bold the current default app
-        """
-        _app_id, options = self.model.apps[index.row()]
-        option.font.setStrikeOut(options.disabled)
-        option.font.setItalic(options.custom)
-        option.font.setBold(options.default)
-
-        return super().paint(painter, option, index)
 
 class SetDefaultAppDialog(QDialog):
     """
@@ -49,7 +28,7 @@ class SetDefaultAppDialog(QDialog):
         self.mimetype = mimetype
 
         self.model = DefaultAppOptionsModel(self.manager, mimetype)
-        self.delegate = DefaultAppOptionsDelegate(self.model, mimetype)
+        self.delegate = DefaultAppOptionsDelegate(self.model, "apps")
 
         # Selection state
         self.current_index = None

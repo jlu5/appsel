@@ -1,4 +1,6 @@
-
+"""
+Manage app associations for MIME types, including default, custom, and disabled entries.
+"""
 import collections
 import configparser
 import itertools
@@ -8,7 +10,7 @@ import os
 from dataclasses import dataclass
 from typing import List, Dict
 
-from PyQt5.QtCore import QStandardPaths
+from PyQt5.QtCore import QStandardPaths, QMimeDatabase
 
 SECTION_DEFAULTS = "Default Applications"
 SECTION_ADDED = "Added Associations"
@@ -32,10 +34,11 @@ class MimeTypesManager():
     Class to enumerate and manage default applications for MIME types.
     All functions in this class expect MIME types as strings instead of QMimeType instances.
     """
-    CONFIGPARSER_CONVERTERS = {'list': lambda value: [app for app in value.strip(';').split(';')]}
+    CONFIGPARSER_CONVERTERS = {'list': lambda value: value.strip(';').split(';')}
     def __init__(self, desktop_entries: str, *, paths: List[str] = None, cache_paths: List[str] = None) -> List[str]:
         self.desktop_entries = desktop_entries
 
+        self.qmimedb = QMimeDatabase()
         self.mimeapps_db = collections.defaultdict(dict)
         self.mimeapps_local = None
         self.mimeapps_local_path = None
@@ -200,6 +203,26 @@ class MimeTypesManager():
             results[app_id] = MimeAppChoiceSettings(disabled=False, custom=True, default=app_id == default_app)
 
         return results
+
+    def get_supported_types(self, app_id: str) -> Dict[str, MimeAppChoiceSettings]:
+        """
+        Returns a dict of MIME types that are supported by an application, along with details of the default choice.
+        """
+        # Get all types registered in the .desktop entry
+        supported = {mimetype: MimeAppChoiceSettings(disabled=False, custom=False, default=None)
+                     for mimetype in self.desktop_entries.entries[app_id].getMimeTypes()}
+        # Add in custom associations
+        for mimetype, apps in self.mimeapps_db[SECTION_ADDED].items():
+            if app_id in apps:
+                supported[mimetype] = MimeAppChoiceSettings(disabled=False, custom=True, default=None)
+        # Add in disabled associations
+        for mimetype, apps in self.mimeapps_db[SECTION_REMOVED].items():
+            if mimetype in supported and app_id in apps:
+                supported[mimetype].disabled = True
+        # Enumerate defaults for each app
+        for mimetype in supported:
+            supported[mimetype].default = app_id == self.get_default_app(mimetype)
+        return supported
 
     def _update_list(self, mimetype: str, app_id: str, section: str, *, remove: bool = False):
         """

@@ -23,14 +23,21 @@ class AppsListModel(QAbstractListModel):
             return self.desktop_entries.get_name(app_id)
         if role == Qt.DecorationRole:  # App icon
             return self.desktop_entries.get_icon(app_id)
+        return QVariant()
 
     def sort(self, _column, order=Qt.AscendingOrder):
         """Sorts the model by the given column and order."""
-        self.apps.sort(key=lambda app_id: self.desktop_entries.get_name(app_id),
+        self.apps.sort(key=lambda app_id: self.desktop_entries.get_name(app_id).casefold(),
                        reverse=order != Qt.AscendingOrder)
 
     def rowCount(self, _index):
+        """
+        Return list of rows in the model.
+        """
         return len(self.apps)
 
     def columnCount(self, _index):
+        """
+        Return list of columns in the model.
+        """
         return 1
