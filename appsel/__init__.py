@@ -36,17 +36,15 @@ class AppSelector(QMainWindow):
         self._ui = loadUi(uifile, self)
         self._ui.show()
 
-        # Enumerate Apps list
-        self.applist = DesktopEntriesList()
-
-        # Enumerate MIME Types table view
-        self.manager = MimeTypesManager(self.applist)
+        # Initialize backend
+        self.desktop_entries = DesktopEntriesList()
+        self.manager = MimeTypesManager(self.desktop_entries)
         self.mimetypesmodel = MimeTypesListModel(self.manager)
 
-        # UI settings
+        # UI bindings
         self._ui.typesView.setModel(self.mimetypesmodel)
         self._ui.typesView.sortByColumn(0, Qt.AscendingOrder)
-        self._ui.typesView.activated.connect(self.configure_default_application)
+        self._ui.typesView.activated.connect(self.configure_default_app)
         self._ui.typesView.sizeHintForColumn = self.types_view_size_hint_for_column
         self._ui.typesView.resizeColumnsToContents()
         self._ui.typesView.setItemDelegate(MimeTypesListDelegate(self.mimetypesmodel))
@@ -57,7 +55,7 @@ class AppSelector(QMainWindow):
         else:
             return int(self.width() * 0.32)
 
-    def configure_default_application(self, index):
+    def configure_default_app(self, index):
         """Launches a dialog to set the default app for a MIME type."""
         mimetype = self.mimetypesmodel.mimetypes[index.row()]  # type: QMimeType
         return SetDefaultAppDialog(self.manager, mimetype, parent=self)
