@@ -95,6 +95,9 @@ class DefaultsForAppModel(QAbstractTableModel):
         return True
 
     def headerData(self, section, orientation, role):
+        """
+        Returns data for table headers.
+        """
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
             return self.COLUMNS[section]
         return QVariant()
@@ -108,13 +111,13 @@ class DefaultsForAppModel(QAbstractTableModel):
             return default_flags | Qt.ItemIsUserCheckable
         return default_flags
 
-    def rowCount(self, _index):
+    def rowCount(self, _parent=None):
         """
         Return list of rows in the model.
         """
         return len(self.supported_types)
 
-    def columnCount(self, _index):
+    def columnCount(self, _parent=None):
         """
         Return list of columns in the model.
         """
