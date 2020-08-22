@@ -7,9 +7,13 @@
     - [x] Load associated application for each type
     - [ ] Allow searching by MIME type or applications
     - [ ] Add an option to only show MIME types that have at least one app associated?
-- [ ] UI: Set defaults by application
-    - [ ] Get list of mime types supported by an application
-    - [ ] Add app to Default Applications section
+- [x] UI: Set defaults by application
+    - [x] Get list of mime types supported by an application
+    - [x] Add app to Default Applications section
+    - [ ] Options to check / uncheck all supported types
+    - [ ] Toggle association / remove custom associations from this dialog
+    - [ ] Add new custom associations from this window
+    - [ ] Add an option to only show apps with at least one MIME type association by default?
 - [x] Add new file type to application
 - [x] Remove file type from application
     - [x] Support removing entries from Added Associations

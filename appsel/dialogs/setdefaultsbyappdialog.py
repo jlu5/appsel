@@ -27,6 +27,7 @@ class SetDefaultsByAppDialog(QDialog):
         #self._ui.selectAllButton.clicked.connect(self.select_all)
         #self._ui.deselectAllButton.clicked.connect(self.deselect_all)
         # ListView
-        self._ui.listView.setModel(self.model)
-        self._ui.listView.setItemDelegate(self.delegate)
+        self._ui.tableView.setModel(self.model)
+        self._ui.tableView.setItemDelegate(self.delegate)
+        self._ui.tableView.resizeColumnsToContents()
         self._ui.show()

@@ -106,8 +106,8 @@ class MimeTypesListModel(QAbstractTableModel):
                                 reverse=order != Qt.AscendingOrder)
         self.refresh()
 
-    def headerData(self, section, _orientation, role):
-        if role == Qt.DisplayRole:
+    def headerData(self, section, orientation, role):
+        if role == Qt.DisplayRole and orientation == Qt.Horizontal:
             return self.COLUMNS[section]
         return QVariant()
 
