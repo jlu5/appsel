@@ -17,12 +17,14 @@ class DefaultsForAppModel(QAbstractListModel):
 
     def refresh(self, first_run=False):
         self.supported_types = list(self.manager.get_supported_types(self.app_id).items())
+        self.supported_types.sort(key=lambda item: item[0].casefold())
         if not first_run:
             self.dataChanged.emit(QModelIndex(), QModelIndex())
 
     def data(self, index, role):
         """
-        Return a list of MIME types that the app supports."""
+        Return a list of MIME types that the app supports.
+        """
         mimetype, options = self.supported_types[index.row()]
         if role == Qt.DisplayRole:  # Display text
             prefix = ''
@@ -35,8 +37,34 @@ class DefaultsForAppModel(QAbstractListModel):
             qm = self.manager.qmimedb.mimeTypeForName(mimetype)
             return utils.get_mimetype_icon(qm)
         if role == Qt.CheckStateRole:
-            return self.manager.get_default_app(mimetype) == self.app_id
+            # A MIME type is:
+            # - Checked if the app is explicitly set as default for that type
+            # - Partial if it was implicitly set as default
+            # - Unchecked otherwise
+            if self.manager.get_default_app(mimetype) == self.app_id:
+                if self.manager.has_default(mimetype):
+                    return Qt.Checked
+                else:
+                    return Qt.PartiallyChecked
+            else:
+                return Qt.Unchecked
         return QVariant()
+
+    def setData(self, index, value, role):
+        """
+        Update the checked state for a MIME type.
+        """
+        if not index.isValid() or role != Qt.CheckStateRole:
+            return False
+
+        mimetype, options = self.supported_types[index.row()]
+        if value == Qt.Checked:
+            self.manager.set_default_app(mimetype, self.app_id)
+        else:
+            self.manager.clear_default_app(mimetype)
+        options.default = self.manager.get_default_app(mimetype) == self.app_id
+        self.dataChanged.emit(index, index)
+        return True
 
     def flags(self, index):
         """
