@@ -7,9 +7,8 @@ from PyQt5.QtWidgets import QDialog, QStyledItemDelegate, QMessageBox
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import QMimeType
 
-sys.path.append('..')
 from .addcustomappdialog import AddCustomAppDialog
-from backend.models.defaultappoptionsmodel import DefaultAppOptionsModel
+from appsel.backend.models.defaultappoptionsmodel import DefaultAppOptionsModel
 
 class ToggleApplicationAction(enum.Enum):
     """Represents the action taken by the Disable / Enable / Remove application button."""

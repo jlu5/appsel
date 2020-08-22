@@ -6,11 +6,10 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QStyledItemDelegate
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import Qt
 
-from backend.models.mimetypeslistmodel import MimeTypesListModel
-from backend.mimetypesmanager import MimeTypesManager
-from backend.desktopentries import DesktopEntriesList
-
-from dialogs.setdefaultappdialog import SetDefaultAppDialog
+from appsel.backend.models.mimetypeslistmodel import MimeTypesListModel
+from appsel.backend.mimetypesmanager import MimeTypesManager
+from appsel.backend.desktopentries import DesktopEntriesList
+from appsel.dialogs.setdefaultappdialog import SetDefaultAppDialog
 
 __version__ = '0.1.0'
 
@@ -76,6 +75,3 @@ def main():
     app.setApplicationVersion(__version__)
     AppSelector(app, "ui/appsel.ui")
     sys.exit(app.exec_())
-
-if __name__ == '__main__':
-    main()

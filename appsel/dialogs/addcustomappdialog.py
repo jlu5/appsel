@@ -6,8 +6,7 @@ from PyQt5.QtWidgets import QDialog, QStyledItemDelegate, QMessageBox
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import QMimeType
 
-sys.path.append('..')
-from backend.models.appslistmodel import AppsListModel
+from appsel.backend.models.appslistmodel import AppsListModel
 
 class AddCustomAppDialog(QDialog):
     """
