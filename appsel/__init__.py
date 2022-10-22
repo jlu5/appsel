@@ -64,7 +64,7 @@ class AppSelector(QMainWindow):
     def configure_default_app(self, index):
         """Launches a dialog to set the default app for a MIME type."""
         mimetype = self.mimetypesmodel.mimetypes[index.row()]  # type: QMimeType
-        return SetDefaultAppDialog(self.manager, mimetype, parent=self)
+        return SetDefaultAppDialog(self.manager, mimetype.name(), parent=self)
 
     def configure_defaults_by_app(self, index):
         """Launches a dialog to set default associations by application."""

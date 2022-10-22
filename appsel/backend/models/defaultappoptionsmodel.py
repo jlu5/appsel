@@ -6,7 +6,7 @@ class DefaultAppOptionsModel(QAbstractListModel):
     """
     A model to represent app choices in the when setting the defaults for a MIME type.
     """
-    def __init__(self, manager, mimetype: QMimeType):
+    def __init__(self, manager, mimetype: str):
         super().__init__()
 
         self.manager = manager
@@ -15,7 +15,7 @@ class DefaultAppOptionsModel(QAbstractListModel):
         self.refresh(first_run=True)
 
     def refresh(self, first_run=False):
-        self.apps = list(self.manager.get_supported_apps(self.mimetype.name()).items())
+        self.apps = list(self.manager.get_supported_apps(self.mimetype).items())
         if not first_run:
             self.dataChanged.emit(QModelIndex(), QModelIndex())
 

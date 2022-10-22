@@ -4,7 +4,6 @@ import logging
 
 from PyQt5.QtWidgets import QDialog
 from PyQt5.uic import loadUi
-from PyQt5.QtCore import QMimeType
 
 from .addcustomappdialog import AddCustomAppDialog  # pylint: disable=relative-beyond-top-level
 from appsel.backend.models.defaultappoptionsmodel import DefaultAppOptionsModel
@@ -21,7 +20,7 @@ class SetDefaultAppDialog(QDialog):
     Dialog to select the default application for a MIME type.
     """
     uifile = "ui/setdefaultappdialog.ui"
-    def __init__(self, mimetypemanager, mimetype: QMimeType, parent=None):
+    def __init__(self, mimetypemanager, mimetype: str, parent=None):
         super().__init__()
         self._app = parent
         self.manager = mimetypemanager
@@ -36,7 +35,7 @@ class SetDefaultAppDialog(QDialog):
 
         self._ui = loadUi(self.uifile, self)
         # XXX: internationalize
-        self._ui.setWindowTitle(f"Set default application for {mimetype.name()}")
+        self._ui.setWindowTitle(f"Set default application for {mimetype}")
         # Buttons
         self._ui.addApplication.clicked.connect(self.on_add_application)
         self._ui.toggleApplication.clicked.connect(self.on_toggle_application)
@@ -73,7 +72,7 @@ class SetDefaultAppDialog(QDialog):
     def on_add_application(self, _event):
         dlg = AddCustomAppDialog(self.manager.desktop_entries)
         if dlg.exec_():
-            self.manager.add_association(self.mimetype.name(), dlg.get_selected_app())
+            self.manager.add_association(self.mimetype, dlg.get_selected_app())
             self._refresh()
 
     def _refresh(self):
@@ -87,10 +86,10 @@ class SetDefaultAppDialog(QDialog):
             app_id, _options = self.model.apps[self.current_index]
 
             # Clear the default app if it matches the system default
-            if app_id == self.manager.get_default_app(self.mimetype.name(), use_fallback=False):
-                self.manager.clear_default_app(self.mimetype.name())
+            if app_id == self.manager.get_default_app(self.mimetype, use_fallback=False):
+                self.manager.clear_default_app(self.mimetype)
             else:
-                self.manager.set_default_app(self.mimetype.name(), app_id)
+                self.manager.set_default_app(self.mimetype, app_id)
             self._refresh()
 
     def on_toggle_application(self, _event):
@@ -100,11 +99,11 @@ class SetDefaultAppDialog(QDialog):
 
         app_id, _options = self.model.apps[self.current_index]
         if self.current_toggle_option is ToggleApplicationAction.ENABLE:
-            self.manager.enable_association(self.mimetype.name(), app_id)
+            self.manager.enable_association(self.mimetype, app_id)
         elif self.current_toggle_option is ToggleApplicationAction.DISABLE:
-            self.manager.disable_association(self.mimetype.name(), app_id)
+            self.manager.disable_association(self.mimetype, app_id)
         elif self.current_toggle_option is ToggleApplicationAction.REMOVE:
-            self.manager.remove_association(self.mimetype.name(), app_id)
+            self.manager.remove_association(self.mimetype, app_id)
             self.current_index = None
         else:
             logging.warning("Cannot toggle / remove application: current toggle option is not set: %s",
