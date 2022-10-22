@@ -5,6 +5,7 @@ from PyQt5.uic import loadUi
 
 from appsel.backend.models.defaultsforappmodel import DefaultsForAppModel
 from appsel.itemdelegates import DefaultAppOptionsDelegate
+from .setdefaultappdialog import SetDefaultAppDialog
 
 class SetDefaultsByAppDialog(QDialog):
     """
@@ -31,6 +32,7 @@ class SetDefaultsByAppDialog(QDialog):
         self._ui.tableView.setModel(self.model)
         self._ui.tableView.setItemDelegate(self.delegate)
         self._ui.tableView.resizeColumnsToContents()
+        self._ui.tableView.activated.connect(self.configure_default_app)
         self._ui.show()
 
     def _check_all(self, state):
@@ -52,3 +54,8 @@ class SetDefaultsByAppDialog(QDialog):
         Handler for the deselect all button.
         """
         self._check_all(Qt.Unchecked)
+
+    def configure_default_app(self, index):
+        """Launches a dialog to set the default app for a MIME type."""
+        mimetype, _ = self.model.supported_types[index.row()]
+        return SetDefaultAppDialog(self.manager, mimetype, parent=self._app)
