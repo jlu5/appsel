@@ -35,6 +35,13 @@ class MimeTypesManager():
     All functions in this class expect MIME types as strings instead of QMimeType instances.
     """
     CONFIGPARSER_CONVERTERS = {'list': lambda value: value.strip(';').split(';')}
+    @classmethod
+    def _get_configparser(cls):
+        # strict=False Ignore duplicates when parsing
+        loader = configparser.ConfigParser(strict=False, converters=cls.CONFIGPARSER_CONVERTERS)
+        loader.optionxform = str  # case sensitive keys
+        return loader
+
     def __init__(self, desktop_entries: str, *, paths: List[str] = None, cache_paths: List[str] = None) -> List[str]:
         self.desktop_entries = desktop_entries
 
@@ -63,7 +70,7 @@ class MimeTypesManager():
         # since that overrides already seen keys
         self.mimeapps_db.clear()
         for path in paths:
-            loader = configparser.ConfigParser(converters=self.CONFIGPARSER_CONVERTERS)
+            loader = self._get_configparser()
             loader.read(path)
             logging.debug("Reading mimeapps.list entries from %s", path)
 
@@ -90,8 +97,7 @@ class MimeTypesManager():
 
         self.mimeinfo_cache.clear()
         for path in paths:
-            # strict=False Ignore duplicates when parsing
-            loader = configparser.ConfigParser(strict=False, converters=self.CONFIGPARSER_CONVERTERS)
+            loader = self._get_configparser()
             loader.read(path)
             logging.debug("Reading mimeinfo.cache entries from %s", path)
             if loader.has_section(SECTION_MIME_CACHE):
