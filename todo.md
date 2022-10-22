@@ -10,7 +10,7 @@
 - [x] UI: Set defaults by application
     - [x] Get list of mime types supported by an application
     - [x] Add app to Default Applications section
-    - [ ] Options to check / uncheck all supported types
+    - [x] Options to check / uncheck all supported types
     - [ ] Toggle association / remove custom associations from this dialog
     - [ ] Add new custom associations from this window
     - [ ] Add an option to only show apps with at least one MIME type association by default?

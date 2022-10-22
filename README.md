@@ -9,7 +9,7 @@ I wrote this tool because the default applications selectors in Linux aren't as 
 - Set default application for a MIME type
 - Add / remove custom associations for MIME types
 - Enable / disable associations for MIME types
-- TODO: Set/unset defaults by application
+- Set / unset defaults by application
 
 ## Install
 
