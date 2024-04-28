@@ -151,6 +151,8 @@ class MimeTypesManager():
 
     def has_default(self, mimetype: str) -> bool:
         """Returns whether a default for the MIME type was explicitly set."""
+        if SECTION_DEFAULTS not in self.mimeapps_local:
+            return False
         return mimetype in self.mimeapps_local[SECTION_DEFAULTS]
 
     def set_default_app(self, mimetype: str, app_id: str):
