@@ -1,10 +1,11 @@
 # TODO
 
-## Bugs
+## Bugs / Fixes
 - [ ] Selecting all types for an app should exclude `inode/directory`
 - [ ] Ctrl-C from console does not immediately terminate the app
+- [ ] Automatic defaults should be shown in SetDefaultAppDialog
 
-## Features to implement
+## Features
 - [x] UI: Get list of MIME types and associated applications
     - [x] Get some sort of item model going again
     - [x] Load all MIME types from QMimeDatabase
@@ -23,4 +24,5 @@
 - [x] Remove file type from application
     - [x] Support removing entries from Added Associations
     - [x] Supporting adding things to Removed Associations
-
+- [ ] Add ability to assign defaults to MIME types without any registered application yet (currently these file types are hidden entirely)
+- [ ] Double clicking an option in SetDefaultAppDialog should apply it

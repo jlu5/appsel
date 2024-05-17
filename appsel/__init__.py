@@ -34,9 +34,13 @@ class AppSelector(QMainWindow):
 
         # Filter models
         self.filteredmimetypesmodel = QSortFilterProxyModel(self)
+        self.filteredmimetypesmodel.setFilterCaseSensitivity(False)
         self.filteredmimetypesmodel.setSourceModel(self.mimetypesmodel)
         self.filteredmimetypesmodel.setFilterKeyColumn(-1)  # search all columns
         self.filteredmimetypesmodel.sort(0, Qt.AscendingOrder)
+        self.filteredappslistmodel = QSortFilterProxyModel(self)
+        self.filteredappslistmodel.setFilterCaseSensitivity(False)
+        self.filteredappslistmodel.setSourceModel(self.appslistmodel)
 
         # UI bindings - select by MIME type tab
         self._ui.typesView.setModel(self.filteredmimetypesmodel)
@@ -48,8 +52,9 @@ class AppSelector(QMainWindow):
         self._ui.typesSearchBar.textChanged.connect(self.update_types_search)
 
         # UI bindings - select by app tab
-        self._ui.appsView.setModel(self.appslistmodel)
+        self._ui.appsView.setModel(self.filteredappslistmodel)
         self._ui.appsView.activated.connect(self.configure_defaults_by_app)
+        self._ui.appsSearchBar.textChanged.connect(self.update_apps_search)
 
     def types_view_size_hint_for_column(self, column):
         if column in {1, 2}:  # File Extensions, Status
@@ -65,7 +70,8 @@ class AppSelector(QMainWindow):
 
     def configure_defaults_by_app(self, index):
         """Launches a dialog to set default associations by application."""
-        app_id = self.appslistmodel.apps[index.row()]  # type: QMimeType
+        unfiltered_index = self.filteredappslistmodel.mapToSource(index)
+        app_id = self.appslistmodel.apps[unfiltered_index.row()]  # type: QMimeType
         return SetDefaultsByAppDialog(self.manager, app_id, parent=self)
 
     def refresh(self):
@@ -76,6 +82,10 @@ class AppSelector(QMainWindow):
     def update_types_search(self):
         search = self._ui.typesSearchBar.text()
         self.filteredmimetypesmodel.setFilterFixedString(search)
+
+    def update_apps_search(self):
+        search = self._ui.appsSearchBar.text()
+        self.filteredappslistmodel.setFilterFixedString(search)
 
 def main():
     """Entrypoint: runs program and inits UI"""
