@@ -26,6 +26,13 @@
        </attribute>
        <layout class="QVBoxLayout" name="layoutByType">
         <item>
+         <widget class="QLineEdit" name="typesSearchBar">
+          <property name="placeholderText">
+           <string>Search</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QTableView" name="typesView">
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
@@ -61,6 +68,13 @@
        </attribute>
        <layout class="QVBoxLayout" name="layoutByApp">
         <item>
+         <widget class="QLineEdit" name="appsSearchBar">
+          <property name="placeholderText">
+           <string>Search</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QListView" name="appsView">
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
@@ -79,7 +93,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>42</height>
+     <height>34</height>
     </rect>
    </property>
   </widget>
