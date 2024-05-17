@@ -9,7 +9,7 @@ from .setdefaultappdialog import SetDefaultAppDialog
 
 class SetDefaultsByAppDialog(QDialog):
     """
-    Dialog to add a custom application for a MIME type.
+    Dialog to toggle default MIME types for an application.
     """
     BLACKLISTED_CATEGORIES = ["inode/"]
     uifile = "ui/setdefaultsbyappdialog.ui"

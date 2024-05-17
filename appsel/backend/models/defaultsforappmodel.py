@@ -36,13 +36,19 @@ class DefaultsForAppModel(QAbstractTableModel):
         Return a list of MIME types that the app supports.
         """
         mimetype, options = self.supported_types[index.row()]
+        app_is_default = self.manager.get_default_app(mimetype) == self.app_id
+        app_is_user_selected_default = self.manager.has_default(mimetype)
+
         if role == Qt.DisplayRole:  # Display text
             prefix = ''
             if options.disabled:
                 prefix += "(disabled) "
             if options.custom:
                 prefix += "(custom) "
-            return prefix + mimetype
+            suffix = ''
+            if app_is_default and not app_is_user_selected_default:
+                suffix += ' (auto default)'
+            return f'{prefix}{mimetype}{suffix}'
         if role == Qt.DecorationRole:
             qm = self.manager.qmimedb.mimeTypeForName(mimetype)
             return utils.get_mimetype_icon(qm)
@@ -51,11 +57,10 @@ class DefaultsForAppModel(QAbstractTableModel):
             # - Checked if the app is explicitly set as default for that type
             # - Partial if it was implicitly set as default
             # - Unchecked otherwise
-            if self.manager.get_default_app(mimetype) == self.app_id:
-                if self.manager.has_default(mimetype):
-                    return Qt.Checked
-                else:
-                    return Qt.PartiallyChecked
+            if app_is_user_selected_default:
+                return Qt.Checked
+            elif app_is_default:
+                return Qt.PartiallyChecked
             else:
                 return Qt.Unchecked
         return QVariant()
