@@ -4,31 +4,18 @@ import sys
 
 from PyQt5.QtWidgets import QMainWindow, QApplication, QStyledItemDelegate
 from PyQt5.uic import loadUi
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSortFilterProxyModel
 
 from appsel.backend.models.mimetypeslistmodel import MimeTypesListModel
 from appsel.backend.models.appslistmodel import AppsListModel
 from appsel.backend.mimetypesmanager import MimeTypesManager
 from appsel.backend.desktopentries import DesktopEntriesList
+from appsel.itemdelegates import MimeTypesListDelegate
 
 from appsel.dialogs.setdefaultappdialog import SetDefaultAppDialog
 from appsel.dialogs.setdefaultsbyappdialog import SetDefaultsByAppDialog
 
 __version__ = '0.1.0'
-
-class MimeTypesListDelegate(QStyledItemDelegate):
-    def __init__(self, model):
-        super().__init__()
-        self.model = model
-        self.manager = model.manager
-
-    def paint(self, painter, option, index):
-        """Paint handler: bold every row where the default application has been set."""
-        mimetype = self.model.mimetypes[index.row()]
-        if self.manager.has_default(mimetype.name()):
-            option.font.setBold(True)
-
-        return super().paint(painter, option, index)
 
 class AppSelector(QMainWindow):
     """App Selector main window"""
@@ -45,13 +32,22 @@ class AppSelector(QMainWindow):
         self.mimetypesmodel = MimeTypesListModel(self.manager)
         self.appslistmodel = AppsListModel(self.desktop_entries)
 
-        # UI bindings
-        self._ui.typesView.setModel(self.mimetypesmodel)
-        self._ui.typesView.sortByColumn(0, Qt.AscendingOrder)
+        # Filter models
+        self.filteredmimetypesmodel = QSortFilterProxyModel(self)
+        self.filteredmimetypesmodel.setSourceModel(self.mimetypesmodel)
+        self.filteredmimetypesmodel.setFilterKeyColumn(-1)  # search all columns
+        self.filteredmimetypesmodel.sort(0, Qt.AscendingOrder)
+
+        # UI bindings - select by MIME type tab
+        self._ui.typesView.setModel(self.filteredmimetypesmodel)
         self._ui.typesView.activated.connect(self.configure_default_app)
         self._ui.typesView.sizeHintForColumn = self.types_view_size_hint_for_column
         self._ui.typesView.resizeColumnsToContents()
-        self._ui.typesView.setItemDelegate(MimeTypesListDelegate(self.mimetypesmodel))
+        self._ui.typesView.setItemDelegate(MimeTypesListDelegate(
+            self.manager, self.mimetypesmodel, self.filteredmimetypesmodel))
+        self._ui.typesSearchBar.textChanged.connect(self.update_types_search)
+
+        # UI bindings - select by app tab
         self._ui.appsView.setModel(self.appslistmodel)
         self._ui.appsView.activated.connect(self.configure_defaults_by_app)
 
@@ -63,7 +59,8 @@ class AppSelector(QMainWindow):
 
     def configure_default_app(self, index):
         """Launches a dialog to set the default app for a MIME type."""
-        mimetype = self.mimetypesmodel.mimetypes[index.row()]  # type: QMimeType
+        unfiltered_index = self.filteredmimetypesmodel.mapToSource(index)
+        mimetype = self.mimetypesmodel.mimetypes[unfiltered_index.row()]  # type: QMimeType
         return SetDefaultAppDialog(self.manager, mimetype.name(), parent=self)
 
     def configure_defaults_by_app(self, index):
@@ -75,6 +72,10 @@ class AppSelector(QMainWindow):
         """Refresh root-level model instances."""
         logging.debug("Called root refresh() method")
         self.mimetypesmodel.refresh()
+
+    def update_types_search(self):
+        search = self._ui.typesSearchBar.text()
+        self.filteredmimetypesmodel.setFilterFixedString(search)
 
 def main():
     """Entrypoint: runs program and inits UI"""

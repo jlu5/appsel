@@ -25,6 +25,7 @@ class SetDefaultAppDialog(QDialog):
         self._app = parent
         self.manager = mimetypemanager
         self.mimetype = mimetype
+        logging.debug('Launching SetDefaultAppDialog for %s', mimetype)
 
         self.model = DefaultAppOptionsModel(self.manager, mimetype)
         self.delegate = DefaultAppOptionsDelegate(self.model, "apps")
