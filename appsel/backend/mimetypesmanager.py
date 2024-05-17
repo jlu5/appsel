@@ -161,6 +161,8 @@ class MimeTypesManager():
         """
         logging.debug("Setting app %s as default for %s", app_id, mimetype)
         self.mimeapps_db[SECTION_DEFAULTS][mimetype] = [app_id]
+        if SECTION_DEFAULTS not in self.mimeapps_local:
+            self.mimeapps_local[SECTION_DEFAULTS] = {}
         self.mimeapps_local[SECTION_DEFAULTS][mimetype] = app_id
         self._write()
 
