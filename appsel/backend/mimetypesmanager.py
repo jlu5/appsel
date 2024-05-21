@@ -250,6 +250,8 @@ class MimeTypesManager():
             if app_id not in applist_local:
                 applist_local.append(app_id)
         if applist_local:
+            if not self.mimeapps_local.has_section(section):
+                self.mimeapps_local[section] = {}
             self.mimeapps_local[section][mimetype] = ';'.join(applist_local)
         else:
             del self.mimeapps_local[section][mimetype]

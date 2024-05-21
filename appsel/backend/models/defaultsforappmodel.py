@@ -14,6 +14,7 @@ class DefaultsForAppModel(QAbstractTableModel):
     def __init__(self, manager, app_id: str):
         super().__init__()
 
+        self.supported_types = None
         self.manager = manager
         self.app_id = app_id
         self.refresh(first_run=True)
@@ -120,6 +121,8 @@ class DefaultsForAppModel(QAbstractTableModel):
         """
         Return list of rows in the model.
         """
+        if self.supported_types is None:
+            return 0
         return len(self.supported_types)
 
     def columnCount(self, _parent=None):
