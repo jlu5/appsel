@@ -22,11 +22,17 @@ class DefaultAppOptionsModel(QAbstractListModel):
     def data(self, index, role):
         app_id, options = self.apps[index.row()]
         if role == Qt.DisplayRole:  # Display text
+            app_is_default = self.manager.get_default_app(self.mimetype) == app_id
             prefix = ''
             if options.disabled:
                 prefix += "(disabled) "
             if options.custom:
                 prefix += "(custom) "
+            if options.default:
+                prefix += "(default) "
+            elif app_is_default:
+                prefix += "(auto default) "
+
             return prefix + self.manager.desktop_entries.get_name(app_id)
         if role == Qt.DecorationRole:  # App icon
             return self.manager.desktop_entries.get_icon(app_id)
