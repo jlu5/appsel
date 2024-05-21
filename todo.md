@@ -3,7 +3,7 @@
 ## Bugs / Fixes
 - [ ] Selecting all types for an app should exclude `inode/directory`
 - [ ] Ctrl-C from console does not immediately terminate the app
-- [ ] Automatic defaults should be shown in SetDefaultAppDialog
+- [x] Automatic defaults should be shown in SetDefaultAppDialog
 
 ## Features
 - [x] UI: Get list of MIME types and associated applications

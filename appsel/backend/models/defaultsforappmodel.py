@@ -1,6 +1,7 @@
 
 # pylint: disable=invalid-name
-from PyQt5.QtCore import Qt, QAbstractTableModel, QMimeDatabase, QModelIndex, QVariant
+from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QVariant
+from PyQt5.QtGui import QFont
 
 from appsel.backend import utils
 
@@ -32,13 +33,20 @@ class DefaultsForAppModel(QAbstractTableModel):
         except IndexError:
             return QVariant()
 
+    @staticmethod
+    def _get_font(options):
+        font = QFont()
+        font.setStrikeOut(options.disabled)
+        font.setItalic(options.custom)
+        font.setBold(options.default)
+        return font
+
     def _get_mimetype(self, index, role):
         """
         Return a list of MIME types that the app supports.
         """
         mimetype, options = self.supported_types[index.row()]
-        app_is_default = self.manager.get_default_app(mimetype) == self.app_id
-        app_is_user_selected_default = self.manager.has_default(mimetype)
+        app_is_user_selected_default = options.default and self.manager.has_default(mimetype)
 
         if role == Qt.DisplayRole:  # Display text
             prefix = ''
@@ -47,7 +55,9 @@ class DefaultsForAppModel(QAbstractTableModel):
             if options.custom:
                 prefix += "(custom) "
             suffix = ''
-            if app_is_default and not app_is_user_selected_default:
+            if app_is_user_selected_default:
+                suffix += ' (default)'
+            elif options.default:
                 suffix += ' (auto default)'
             return f'{prefix}{mimetype}{suffix}'
         if role == Qt.DecorationRole:
@@ -60,25 +70,31 @@ class DefaultsForAppModel(QAbstractTableModel):
             # - Unchecked otherwise
             if app_is_user_selected_default:
                 return Qt.Checked
-            elif app_is_default:
+            elif options.default:
                 return Qt.PartiallyChecked
             else:
                 return Qt.Unchecked
+        if role == Qt.FontRole:
+            return self._get_font(options)
         return QVariant()
 
     def _get_extensions(self, index, role):
         """Returns display data for the File Extensions column."""
-        mimetype, _options = self.supported_types[index.row()]
+        mimetype, options = self.supported_types[index.row()]
         qm = self.manager.qmimedb.mimeTypeForName(mimetype)
         if role == Qt.DisplayRole:
             return ",".join(qm.suffixes())
+        if role == Qt.FontRole:
+            return self._get_font(options)
         return QVariant()
 
     def _get_status(self, index, role):
         """Returns display data for the Status column."""
-        mimetype, _options = self.supported_types[index.row()]
+        mimetype, options = self.supported_types[index.row()]
         if role == Qt.DisplayRole:
             return "User defined" if self.manager.has_default(mimetype) else "Automatic"
+        if role == Qt.FontRole:
+            return self._get_font(options)
         return QVariant()
 
     def setData(self, index, value, role):

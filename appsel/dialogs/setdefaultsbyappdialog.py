@@ -4,7 +4,6 @@ from PyQt5.QtWidgets import QDialog
 from PyQt5.uic import loadUi
 
 from appsel.backend.models.defaultsforappmodel import DefaultsForAppModel
-from appsel.itemdelegates import DefaultAppOptionsDelegate
 from .setdefaultappdialog import SetDefaultAppDialog
 
 class SetDefaultsByAppDialog(QDialog):
@@ -20,7 +19,6 @@ class SetDefaultsByAppDialog(QDialog):
 
         self.app_id = app_id
         self.model = DefaultsForAppModel(manager, app_id)
-        self.delegate = DefaultAppOptionsDelegate(self.model, "supported_types")
 
         self._ui = loadUi(self.uifile, self)
         # XXX: internationalize
@@ -30,7 +28,6 @@ class SetDefaultsByAppDialog(QDialog):
         self._ui.deselectAllButton.clicked.connect(self.deselect_all)
         # ListView
         self._ui.tableView.setModel(self.model)
-        self._ui.tableView.setItemDelegate(self.delegate)
         self._ui.tableView.resizeColumnsToContents()
         self._ui.tableView.activated.connect(self.configure_default_app)
         self._ui.show()

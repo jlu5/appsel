@@ -7,7 +7,6 @@ from PyQt5.uic import loadUi
 
 from .addcustomappdialog import AddCustomAppDialog  # pylint: disable=relative-beyond-top-level
 from appsel.backend.models.defaultappoptionsmodel import DefaultAppOptionsModel
-from appsel.itemdelegates import DefaultAppOptionsDelegate
 
 class ToggleApplicationAction(enum.Enum):
     """Represents the action taken by the Disable / Enable / Remove application button."""
@@ -28,7 +27,6 @@ class SetDefaultAppDialog(QDialog):
         logging.debug('Launching SetDefaultAppDialog for %s', mimetype)
 
         self.model = DefaultAppOptionsModel(self.manager, mimetype)
-        self.delegate = DefaultAppOptionsDelegate(self.model, "apps")
 
         # Selection state
         self.current_index = None
@@ -44,7 +42,6 @@ class SetDefaultAppDialog(QDialog):
         # ListView
         self._ui.appsView.setModel(self.model)
         self._ui.appsView.selectionModel().selectionChanged.connect(self.on_row_changed)
-        self._ui.appsView.setItemDelegate(self.delegate)
         self._ui.show()
 
     def _update_toggle_action(self):

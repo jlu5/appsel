@@ -1,6 +1,7 @@
 
 # pylint: disable=invalid-name
-from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex, QMimeType
+from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
+from PyQt5.QtGui import QFont
 
 class DefaultAppOptionsModel(QAbstractListModel):
     """
@@ -36,6 +37,12 @@ class DefaultAppOptionsModel(QAbstractListModel):
             return prefix + self.manager.desktop_entries.get_name(app_id)
         if role == Qt.DecorationRole:  # App icon
             return self.manager.desktop_entries.get_icon(app_id)
+        if role == Qt.FontRole:  # Font rendering options
+            font = QFont()
+            font.setStrikeOut(options.disabled)
+            font.setItalic(options.custom)
+            font.setBold(options.default)
+            return font
 
     def sort(self, _column, order=Qt.AscendingOrder):
         """Sorts the model by the given column and order."""
