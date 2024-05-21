@@ -1,6 +1,7 @@
 
 # pylint: disable=invalid-name
-from PyQt5.QtCore import Qt, QAbstractTableModel, QMimeDatabase, QVariant, QModelIndex
+from PyQt5.QtCore import Qt, QAbstractTableModel, QVariant, QModelIndex
+from PyQt5.QtGui import QFont
 
 from appsel.backend import utils
 
@@ -32,6 +33,10 @@ class MimeTypesListModel(QAbstractTableModel):
             return mimetype.name()
         if role == Qt.DecorationRole:
             return utils.get_mimetype_icon(mimetype)
+        if role == Qt.FontRole:
+            font = QFont()
+            font.setBold(self.manager.has_default(mimetype.name()))
+            return font
 
         return QVariant()
 
@@ -41,21 +46,35 @@ class MimeTypesListModel(QAbstractTableModel):
 
         if role == Qt.DisplayRole:
             return ",".join(mimetype.suffixes())
+        if role == Qt.FontRole:
+            font = QFont()
+            font.setBold(self.manager.has_default(mimetype.name()))
+            return font
 
         return QVariant()
 
     def _get_status(self, index, role):
         """Returns display data for the Status column."""
         mimetype = self.mimetypes[index.row()]
+        default_is_set = self.manager.has_default(mimetype.name())
 
         if role == Qt.DisplayRole:
-            return "User defined" if self.manager.has_default(mimetype.name()) else "Automatic"
+            return "User defined" if default_is_set else "Automatic"
+        if role == Qt.FontRole:
+            font = QFont()
+            font.setBold(default_is_set)
+            return font
 
         return QVariant()
 
     def _get_default_app(self, index, role):
         """Returns display data for the default application column."""
         mimetype = self.mimetypes[index.row()]
+        if role == Qt.FontRole:
+            font = QFont()
+            font.setBold(self.manager.has_default(mimetype.name()))
+            return font
+
         if mimetype.name() in self._default_app_cache:
             default_app_id = self._default_app_cache[mimetype.name()]
         else:

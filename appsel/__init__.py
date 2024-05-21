@@ -10,7 +10,6 @@ from appsel.backend.models.mimetypeslistmodel import MimeTypesListModel
 from appsel.backend.models.appslistmodel import AppsListModel
 from appsel.backend.mimetypesmanager import MimeTypesManager
 from appsel.backend.desktopentries import DesktopEntriesList
-from appsel.itemdelegates import MimeTypesListDelegate
 
 from appsel.dialogs.setdefaultappdialog import SetDefaultAppDialog
 from appsel.dialogs.setdefaultsbyappdialog import SetDefaultsByAppDialog
@@ -47,8 +46,6 @@ class AppSelector(QMainWindow):
         self._ui.typesView.activated.connect(self.configure_default_app)
         self._ui.typesView.sizeHintForColumn = self.types_view_size_hint_for_column
         self._ui.typesView.resizeColumnsToContents()
-        self._ui.typesView.setItemDelegate(MimeTypesListDelegate(
-            self.manager, self.mimetypesmodel, self.filteredmimetypesmodel))
         self._ui.typesSearchBar.textChanged.connect(self.update_types_search)
 
         # UI bindings - select by app tab
