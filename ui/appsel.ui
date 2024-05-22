@@ -81,6 +81,16 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="showAllAppsCheckBox">
+          <property name="toolTip">
+           <string extracomment="If unchecked, only apps that have at least one supported file type will be shown"/>
+          </property>
+          <property name="text">
+           <string>Show all apps</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>

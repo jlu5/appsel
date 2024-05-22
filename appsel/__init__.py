@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt, QSortFilterProxyModel
 
 from appsel.backend.models.mimetypeslistmodel import MimeTypesListModel
 from appsel.backend.models.appslistmodel import AppsListModel
+from appsel.backend.models.filteredappslistmodel import FilteredAppsListModel
 from appsel.backend.mimetypesmanager import MimeTypesManager
 from appsel.backend.desktopentries import DesktopEntriesList
 
@@ -37,7 +38,7 @@ class AppSelector(QMainWindow):
         self.filteredmimetypesmodel.setSourceModel(self.mimetypesmodel)
         self.filteredmimetypesmodel.setFilterKeyColumn(-1)  # search all columns
         self.filteredmimetypesmodel.sort(0, Qt.AscendingOrder)
-        self.filteredappslistmodel = QSortFilterProxyModel(self)
+        self.filteredappslistmodel = FilteredAppsListModel(self, self.manager, self._ui)
         self.filteredappslistmodel.setFilterCaseSensitivity(False)
         self.filteredappslistmodel.setSourceModel(self.appslistmodel)
 
@@ -52,6 +53,7 @@ class AppSelector(QMainWindow):
         self._ui.appsView.setModel(self.filteredappslistmodel)
         self._ui.appsView.activated.connect(self.configure_defaults_by_app)
         self._ui.appsSearchBar.textChanged.connect(self.update_apps_search)
+        self._ui.showAllAppsCheckBox.stateChanged.connect(self.filteredappslistmodel.invalidate)
 
     def types_view_size_hint_for_column(self, column):
         if column in {1, 2}:  # File Extensions, Status

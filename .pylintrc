@@ -1,6 +1,6 @@
 [FORMAT]
 max-line-length=120
-disable=no-else-return
+disable=no-else-return, invalid-name
 good-names-rgxs = "^..?$"
 
 [MASTER]
