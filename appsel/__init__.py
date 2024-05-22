@@ -47,12 +47,12 @@ class AppSelector(QMainWindow):
         self._ui.typesView.activated.connect(self.configure_default_app)
         self._ui.typesView.sizeHintForColumn = self.types_view_size_hint_for_column
         self._ui.typesView.resizeColumnsToContents()
-        self._ui.typesSearchBar.textChanged.connect(self.update_types_search)
+        self._ui.typesSearchBar.textChanged.connect(self.filteredmimetypesmodel.setFilterFixedString)
 
         # UI bindings - select by app tab
         self._ui.appsView.setModel(self.filteredappslistmodel)
         self._ui.appsView.activated.connect(self.configure_defaults_by_app)
-        self._ui.appsSearchBar.textChanged.connect(self.update_apps_search)
+        self._ui.appsSearchBar.textChanged.connect(self.filteredappslistmodel.setFilterFixedString)
         self._ui.showAllAppsCheckBox.stateChanged.connect(self.filteredappslistmodel.invalidate)
 
     def types_view_size_hint_for_column(self, column):
@@ -77,14 +77,6 @@ class AppSelector(QMainWindow):
         """Refresh root-level model instances."""
         logging.debug("Called root refresh() method")
         self.mimetypesmodel.refresh()
-
-    def update_types_search(self):
-        search = self._ui.typesSearchBar.text()
-        self.filteredmimetypesmodel.setFilterFixedString(search)
-
-    def update_apps_search(self):
-        search = self._ui.appsSearchBar.text()
-        self.filteredappslistmodel.setFilterFixedString(search)
 
 def main():
     """Entrypoint: runs program and inits UI"""
