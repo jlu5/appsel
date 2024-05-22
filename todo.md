@@ -17,7 +17,7 @@
     - [x] Options to check / uncheck all supported types
     - [x] Toggle association / remove custom associations from this dialog
     - [ ] Add new custom associations from this window
-    - [ ] Show selected/total defaults in the apps view
+    - [x] Show selected/total defaults in the apps view
     - [x] Add an option to only show apps with at least one MIME type association by default
 - [x] Add new file type to application
 - [x] Remove file type from application

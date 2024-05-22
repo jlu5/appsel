@@ -30,7 +30,7 @@ class AppSelector(QMainWindow):
         self.desktop_entries = DesktopEntriesList()
         self.manager = MimeTypesManager(self.desktop_entries)
         self.mimetypesmodel = MimeTypesListModel(self.manager)
-        self.appslistmodel = AppsListModel(self.desktop_entries)
+        self.appslistmodel = AppsListModel(self.manager)
 
         # Filter models
         self.filteredmimetypesmodel = QSortFilterProxyModel(self)
@@ -45,21 +45,29 @@ class AppSelector(QMainWindow):
         # UI bindings - select by MIME type tab
         self._ui.typesView.setModel(self.filteredmimetypesmodel)
         self._ui.typesView.activated.connect(self.configure_default_app)
-        self._ui.typesView.sizeHintForColumn = self.types_view_size_hint_for_column
+        self._ui.typesView.sizeHintForColumn = self.types_view_size_hint
         self._ui.typesView.resizeColumnsToContents()
         self._ui.typesSearchBar.textChanged.connect(self.filteredmimetypesmodel.setFilterFixedString)
 
         # UI bindings - select by app tab
         self._ui.appsView.setModel(self.filteredappslistmodel)
         self._ui.appsView.activated.connect(self.configure_defaults_by_app)
+        self._ui.appsView.sizeHintForColumn = self.apps_view_size_hint
+        self._ui.appsView.resizeColumnsToContents()
         self._ui.appsSearchBar.textChanged.connect(self.filteredappslistmodel.setFilterFixedString)
         self._ui.showAllAppsCheckBox.stateChanged.connect(self.filteredappslistmodel.invalidate)
 
-    def types_view_size_hint_for_column(self, column):
+    def types_view_size_hint(self, column):
         if column in {1, 2}:  # File Extensions, Status
             return int(self.width() * 0.15)
         else:
             return int(self.width() * 0.32)
+
+    def apps_view_size_hint(self, column):
+        if column in {0}:  # App name
+            return int(self.width() * 0.5)
+        else:
+            return int(self.width() * 0.15)
 
     def configure_default_app(self, index):
         """Launches a dialog to set the default app for a MIME type."""
