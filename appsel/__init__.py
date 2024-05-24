@@ -2,7 +2,7 @@
 import logging
 import sys
 
-from PyQt5.QtWidgets import QMainWindow, QApplication, QStyledItemDelegate
+from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import Qt, QSortFilterProxyModel
 
